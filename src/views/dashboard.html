@@ -2,28 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <title>DataSync</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Vazirmatn:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     :root {
-      --ink: #111827;
-      --muted: #6b7280;
-      --soft: #9ca3af;
-      --line: #eceff3;
+      --bg: #f4f6fb;
       --surface: #ffffff;
-      --page: #f3f4f6;
-      --accent: #111827;
-      --danger: #b42318;
-      --sms-bubble: #e8f5e9;
-      --sms-ink: #0f3d2e;
+      --ink: #1b2559;
+      --muted: #8f9bb3;
+      --line: #eef1f7;
+      --blue: #3b6ff5;
+      --blue-soft: #e8effe;
+      --green: #22c55e;
+      --red: #ef4444;
       --wa: #25d366;
       --tg: #2aabee;
       --ig: #e1306c;
-      --call: #2563eb;
-      --missed: #dc2626;
+      --shadow: 0 10px 30px rgba(27, 37, 89, 0.06);
     }
 
     * { box-sizing: border-box; }
@@ -31,210 +29,175 @@
     html, body {
       margin: 0;
       min-height: 100%;
-    }
-
-    body {
-      font-family: "Outfit", "Vazirmatn", system-ui, sans-serif;
+      background: var(--bg);
       color: var(--ink);
-      background: var(--page);
+      font-family: "Plus Jakarta Sans", "Vazirmatn", system-ui, sans-serif;
     }
 
-    .shell {
-      width: min(520px, 100%);
-      margin: 0 auto;
+    .phone {
+      width: min(430px, 100%);
       min-height: 100vh;
+      margin: 0 auto;
       background: var(--surface);
-      border-inline: 1px solid var(--line);
       display: flex;
       flex-direction: column;
+      position: relative;
+      box-shadow: var(--shadow);
     }
 
-    header {
+    header.app-header {
+      padding: 22px 20px 10px;
+      background: var(--surface);
       position: sticky;
       top: 0;
-      z-index: 10;
-      background: rgba(255, 255, 255, 0.92);
-      backdrop-filter: blur(16px);
-      border-bottom: 1px solid var(--line);
-      padding: 18px 20px 0;
+      z-index: 5;
     }
 
-    .top {
+    .header-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 16px;
+      gap: 12px;
+      margin-bottom: 4px;
     }
 
-    .brand {
+    .title {
       margin: 0;
-      font-size: 1.35rem;
-      font-weight: 600;
-      letter-spacing: -0.03em;
+      font-size: 1.85rem;
+      font-weight: 700;
+      letter-spacing: -0.04em;
+      color: var(--ink);
     }
 
-    .live {
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .icon-btn {
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .icon-btn:hover { background: var(--line); color: var(--ink); }
+
+    .icon-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: currentColor;
+    }
+
+    .live-pill {
       display: inline-flex;
       align-items: center;
-      gap: 7px;
-      color: var(--muted);
+      gap: 6px;
+      margin-top: 6px;
       font-size: 0.78rem;
       font-weight: 500;
+      color: var(--muted);
     }
 
-    .live i {
+    .live-pill i {
       width: 7px;
       height: 7px;
       border-radius: 50%;
-      background: #16a34a;
+      background: var(--green);
+      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
       animation: pulse 1.8s ease infinite;
-    }
-
-    .tabs {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 0;
-    }
-
-    .tab {
-      appearance: none;
-      border: 0;
-      background: transparent;
-      padding: 12px 8px 14px;
-      font: inherit;
-      font-size: 0.92rem;
-      font-weight: 500;
-      color: var(--soft);
-      cursor: pointer;
-      position: relative;
-    }
-
-    .tab strong {
-      display: inline-block;
-      margin-inline-start: 4px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      color: inherit;
-      opacity: 0.8;
-    }
-
-    .tab.active {
-      color: var(--ink);
-    }
-
-    .tab.active::after {
-      content: "";
-      position: absolute;
-      left: 18%;
-      right: 18%;
-      bottom: 0;
-      height: 2px;
-      border-radius: 999px;
-      background: var(--ink);
-    }
-
-    .toolbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 20px;
-      border-bottom: 1px solid var(--line);
-      background: #fafafa;
-    }
-
-    .toolbar span {
-      font-size: 0.78rem;
-      color: var(--muted);
-    }
-
-    .actions {
-      display: flex;
-      gap: 6px;
-    }
-
-    .actions button {
-      appearance: none;
-      border: 0;
-      background: transparent;
-      color: var(--muted);
-      font: inherit;
-      font-size: 0.78rem;
-      font-weight: 500;
-      padding: 6px 8px;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    .actions button:hover {
-      background: #eef0f3;
-      color: var(--ink);
-    }
-
-    .actions button.danger:hover {
-      background: #fef3f2;
-      color: var(--danger);
     }
 
     .feed {
       flex: 1;
-      padding: 12px 14px 28px;
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
+      overflow: auto;
+      padding: 4px 8px 110px;
     }
 
     .empty {
-      margin: 48px 12px;
+      margin: 64px 24px;
       text-align: center;
       color: var(--muted);
       font-size: 0.95rem;
       line-height: 1.6;
     }
 
-    /* —— SMS message style —— */
-    .msg {
+    .row {
       display: grid;
-      grid-template-columns: 40px 1fr;
-      gap: 10px;
-      padding: 10px 8px;
+      grid-template-columns: 56px 1fr auto;
+      gap: 12px;
+      align-items: center;
+      padding: 12px 12px;
       border-radius: 18px;
+      cursor: default;
       animation: fadeIn 0.28s ease both;
     }
 
-    .msg:hover { background: #f9fafb; }
+    .row:hover { background: #f8f9fd; }
 
     .avatar {
-      width: 40px;
-      height: 40px;
+      width: 52px;
+      height: 52px;
       border-radius: 50%;
       display: grid;
       place-items: center;
-      font-size: 0.85rem;
-      font-weight: 600;
       color: #fff;
-      background: #374151;
+      font-weight: 700;
+      font-size: 0.95rem;
+      position: relative;
       flex-shrink: 0;
+      background: #94a3b8;
     }
 
-    .avatar.sms { background: #0f766e; }
+    .avatar.sms { background: linear-gradient(135deg, #60a5fa, #3b6ff5); }
     .avatar.wa { background: var(--wa); }
     .avatar.tg { background: var(--tg); }
     .avatar.ig {
-      background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fdf497 5%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
+      background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
     }
-    .avatar.call { background: var(--call); }
-    .avatar.missed { background: var(--missed); }
+    .avatar.incoming { background: #dcfce7; color: #15803d; }
+    .avatar.outgoing { background: var(--blue-soft); color: var(--blue); }
+    .avatar.missed { background: #fee2e2; color: var(--red); }
+    .avatar.other { background: #e2e8f0; color: #475569; }
 
     .avatar svg {
-      width: 22px;
-      height: 22px;
-      fill: #fff;
-      display: block;
+      width: 24px;
+      height: 24px;
+      fill: currentColor;
     }
 
-    .msg-main { min-width: 0; }
+    .avatar .badge-app {
+      position: absolute;
+      right: -2px;
+      bottom: -2px;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      border: 2px solid #fff;
+      display: grid;
+      place-items: center;
+      background: var(--blue);
+    }
 
-    .msg-top {
+    .avatar .badge-app.wa { background: var(--wa); }
+    .avatar .badge-app.tg { background: var(--tg); }
+    .avatar .badge-app.ig { background: var(--ig); }
+
+    .avatar .badge-app svg {
+      width: 11px;
+      height: 11px;
+      fill: #fff;
+    }
+
+    .row-main { min-width: 0; }
+
+    .row-top {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
@@ -242,32 +205,105 @@
       margin-bottom: 4px;
     }
 
-    .sender {
+    .name {
       margin: 0;
-      font-size: 0.95rem;
-      font-weight: 600;
-      letter-spacing: -0.01em;
+      font-size: 0.98rem;
+      font-weight: 700;
+      color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
     .when {
-      font-size: 0.72rem;
-      color: var(--soft);
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--muted);
       white-space: nowrap;
       flex-shrink: 0;
     }
 
-    .bubble {
-      display: inline-block;
-      max-width: 100%;
+    .preview {
       margin: 0;
-      padding: 10px 12px;
-      border-radius: 4px 16px 16px 16px;
-      background: var(--sms-bubble);
-      color: var(--sms-ink);
-      font-family: "Vazirmatn", "Outfit", sans-serif;
+      font-size: 0.86rem;
+      font-weight: 500;
+      color: var(--muted);
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
+    }
+
+    .preview.rtl {
+      direction: rtl;
+      text-align: right;
+    }
+
+    .meta-col {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 8px;
+      align-self: start;
+      padding-top: 2px;
+    }
+
+    .count-badge {
+      min-width: 22px;
+      height: 22px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 0.72rem;
+      font-weight: 700;
+      display: inline-grid;
+      place-items: center;
+    }
+
+    .bubble-wrap {
+      padding: 8px 14px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .msg-block {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 6px;
+      max-width: 88%;
+      animation: fadeIn 0.28s ease both;
+    }
+
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-inline: 4px;
+    }
+
+    .msg-meta .who {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .msg-meta .at {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+
+    .bubble {
+      margin: 0;
+      padding: 12px 14px;
+      border-radius: 4px 18px 18px 18px;
+      background: #f1f4f9;
+      color: var(--ink);
+      font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
       font-size: 0.92rem;
       font-weight: 500;
       line-height: 1.55;
@@ -278,194 +314,145 @@
     .bubble.rtl {
       direction: rtl;
       text-align: right;
-      border-radius: 16px 4px 16px 16px;
+      border-radius: 18px 4px 18px 18px;
     }
 
-    /* —— Social notification style —— */
-    .notif {
+    .bottom-nav {
+      position: sticky;
+      bottom: 0;
+      margin-top: auto;
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--line);
+      padding: 10px 18px calc(12px + env(safe-area-inset-bottom));
       display: grid;
-      grid-template-columns: 44px 1fr;
-      gap: 12px;
-      align-items: start;
-      padding: 14px 12px;
-      border-radius: 18px;
-      background: #fff;
-      border: 1px solid var(--line);
-      animation: fadeIn 0.28s ease both;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
     }
 
-    .notif-body { min-width: 0; }
-
-    .notif-app {
-      margin: 0 0 2px;
-      font-size: 0.72rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      text-transform: uppercase;
-      color: var(--soft);
-    }
-
-    .notif-title {
-      margin: 0 0 4px;
-      font-size: 0.95rem;
-      font-weight: 600;
-    }
-
-    .notif-text {
-      margin: 0;
-      font-family: "Vazirmatn", "Outfit", sans-serif;
-      font-size: 0.9rem;
+    .nav-item {
+      appearance: none;
+      border: 0;
+      background: transparent;
       color: var(--muted);
-      line-height: 1.45;
-      white-space: pre-wrap;
-      word-break: break-word;
-    }
-
-    .notif-text.rtl {
-      direction: rtl;
-      text-align: right;
-    }
-
-    .notif-meta {
-      margin-top: 8px;
+      font: inherit;
       font-size: 0.72rem;
-      color: var(--soft);
-    }
-
-    /* —— Call log style —— */
-    .call {
-      display: grid;
-      grid-template-columns: 44px 1fr auto;
-      gap: 12px;
+      font-weight: 600;
+      display: flex;
+      flex-direction: column;
       align-items: center;
-      padding: 14px 12px;
-      border-radius: 18px;
-      border: 1px solid var(--line);
-      background: #fff;
-      animation: fadeIn 0.28s ease both;
+      gap: 4px;
+      padding: 6px 4px 2px;
+      cursor: pointer;
+      position: relative;
     }
 
-    .call-icon {
-      width: 44px;
-      height: 44px;
-      border-radius: 50%;
-      display: grid;
-      place-items: center;
-      background: #eff6ff;
-      color: var(--call);
-    }
-
-    .call-icon.incoming {
-      background: #ecfdf5;
-      color: #15803d;
-    }
-
-    .call-icon.outgoing {
-      background: #eff6ff;
-      color: #1d4ed8;
-    }
-
-    .call-icon.missed {
-      background: #fef2f2;
-      color: var(--missed);
-    }
-
-    .call-icon svg {
-      width: 20px;
-      height: 20px;
+    .nav-item svg {
+      width: 22px;
+      height: 22px;
       fill: currentColor;
     }
 
-    .call-name {
-      margin: 0;
-      font-size: 0.98rem;
-      font-weight: 600;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+    .nav-item .dot-count {
+      position: absolute;
+      top: 0;
+      right: calc(50% - 22px);
+      min-width: 16px;
+      height: 16px;
+      padding: 0 4px;
+      border-radius: 999px;
+      background: var(--blue);
+      color: #fff;
+      font-size: 0.62rem;
+      font-weight: 700;
+      display: none;
+      place-items: center;
     }
 
-    .call-sub {
-      margin: 3px 0 0;
-      font-size: 0.8rem;
-      color: var(--muted);
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    .nav-item .dot-count.show { display: grid; }
 
-    .call-sub.missed { color: var(--missed); }
+    .nav-item.active { color: var(--ink); }
 
-    .call-time {
-      font-size: 0.75rem;
-      color: var(--soft);
-      white-space: nowrap;
-      align-self: start;
-      padding-top: 4px;
+    .nav-item.active::after {
+      content: "";
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--ink);
+      margin-top: 2px;
     }
 
     @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0.35); }
-      70% { box-shadow: 0 0 0 8px rgba(22, 163, 74, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(22, 163, 74, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
+      70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
 
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
-
-    @media (max-width: 560px) {
-      .shell { border-inline: 0; }
-    }
   </style>
 </head>
 <body>
-  <div class="shell">
-    <header>
-      <div class="top">
-        <h1 class="brand">DataSync</h1>
-        <div class="live"><i></i> Live</div>
+  <div class="phone">
+    <header class="app-header">
+      <div class="header-row">
+        <h1 class="title" id="pageTitle">Messages</h1>
+        <div class="header-actions">
+          <button type="button" class="icon-btn" id="refreshBtn" title="Refresh">
+            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 0 1-8.9 3.1L6.7 16.5A7.97 7.97 0 0 0 20 12c0-2.21-.9-4.21-2.35-5.65zM6 12c0-1.48.65-2.8 1.69-3.71L6.35 6.94A7.97 7.97 0 0 0 4 12c0 3.87 2.75 7.1 6.37 7.85l.63-1.98A6.001 6.001 0 0 1 6 12z"/></svg>
+          </button>
+          <button type="button" class="icon-btn" id="clearBtn" title="Clear">
+            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          </button>
+        </div>
       </div>
-      <nav class="tabs" aria-label="Channels">
-        <button type="button" class="tab active" data-tab="sms">SMS <strong id="count-sms">0</strong></button>
-        <button type="button" class="tab" data-tab="social">Social <strong id="count-social">0</strong></button>
-        <button type="button" class="tab" data-tab="calls">Calls <strong id="count-calls">0</strong></button>
-      </nav>
+      <div class="live-pill"><i></i> Live sync</div>
     </header>
 
-    <div class="toolbar">
-      <span id="subtitle">Messages</span>
-      <div class="actions">
-        <button type="button" id="refreshBtn">Refresh</button>
-        <button type="button" class="danger" id="clearBtn">Clear</button>
-      </div>
-    </div>
-
     <section class="feed" id="feed" aria-live="polite"></section>
+
+    <nav class="bottom-nav" aria-label="Channels">
+      <button type="button" class="nav-item active" data-tab="sms">
+        <span class="dot-count" id="count-sms">0</span>
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+        SMS
+      </button>
+      <button type="button" class="nav-item" data-tab="social">
+        <span class="dot-count" id="count-social">0</span>
+        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+        Social
+      </button>
+      <button type="button" class="nav-item" data-tab="calls">
+        <span class="dot-count" id="count-calls">0</span>
+        <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8z"/></svg>
+        Calls
+      </button>
+    </nav>
   </div>
 
   <script>
     const TABS = {
       sms: {
-        subtitle: "Messages",
+        title: "Messages",
         empty: "No SMS yet",
         match: (type) => type === "SMS",
       },
       social: {
-        subtitle: "Notifications",
+        title: "Social",
         empty: "No social notifications yet",
         match: (type) => ["WHATSAPP", "TELEGRAM", "INSTAGRAM", "SOCIAL", "NOTIFICATION"].includes(type),
       },
       calls: {
-        subtitle: "Recents",
+        title: "Calls",
         empty: "No calls yet",
         match: (type) => ["CALL", "CALL_LOG", "CALLS"].includes(type),
       },
     };
 
     const feed = document.getElementById("feed");
-    const subtitleEl = document.getElementById("subtitle");
+    const pageTitle = document.getElementById("pageTitle");
 
     let activeTab = "sms";
     let allItems = [];
@@ -497,23 +484,71 @@
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
 
+    function eventTime(item) {
+      return item?.timestamp || item?.receivedAt || 0;
+    }
+
     function formatWhen(ms) {
       if (!ms) return "";
       const d = new Date(ms);
       const now = new Date();
-      const sameDay = d.toDateString() === now.toDateString();
-      if (sameDay) {
+      const diff = now - d;
+      if (diff < 60_000) return "now";
+      if (diff < 3_600_000) return `${Math.floor(diff / 60_000)} min`;
+      if (diff < 86_400_000 && d.toDateString() === now.toDateString()) {
         return d.toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
       }
-      return d.toLocaleString(undefined, {
-        month: "short",
-        day: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+      if (diff < 172_800_000) return "1 day";
+      return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+    }
+
+    function formatExact(ms) {
+      if (!ms) return "";
+      return new Date(ms).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
+    }
+
+    function sortNewestFirst(items) {
+      return [...items].sort((a, b) => {
+        const aTime = Number(a?.timestamp ?? a?.receivedAt ?? 0);
+        const bTime = Number(b?.timestamp ?? b?.receivedAt ?? 0);
+        if (bTime !== aTime) return bTime - aTime;
+        const aRecv = Number(a?.receivedAt ?? 0);
+        const bRecv = Number(b?.receivedAt ?? 0);
+        if (bRecv !== aRecv) return bRecv - aRecv;
+        return String(b?.id ?? "").localeCompare(String(a?.id ?? ""));
       });
     }
 
-    function socialAvatarClass(type) {
+    function parseCall(item) {
+      const content = String(item.content || "");
+      const parts = content.split("·").map((p) => p.trim()).filter(Boolean);
+      const direction = parts[0] || "Call";
+      const number = parts[1] || item.sender || "";
+      let duration = (parts[2] || "").replace(/^duration\s*=\s*/i, "").trim();
+      const kind = /missed/i.test(direction)
+        ? "missed"
+        : /outgoing/i.test(direction)
+          ? "outgoing"
+          : /incoming/i.test(direction)
+            ? "incoming"
+            : "other";
+      return { direction, number, duration, kind };
+    }
+
+    const socialIcons = {
+      WHATSAPP: `<svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.37c1.45.78 3.08 1.2 4.74 1.2 5.46 0 9.91-4.45 9.91-9.91C21.95 6.46 17.5 2 12.04 2zm4.55 13.65c-.19.53-.93.98-1.51 1.1-.4.08-.92.14-2.67-.58-2.24-.93-3.68-3.19-3.79-3.34-.11-.15-.9-1.2-.9-2.28 0-1.08.55-1.61.77-1.84.19-.2.49-.29.76-.29h.24c.21.01.31.02.45.36.17.41.59 1.43.64 1.54.05.11.1.26.03.41-.07.15-.13.22-.24.35-.11.13-.21.22-.32.36-.12.13-.25.27-.1.52.15.25.66 1.09 1.42 1.76.98.87 1.78 1.15 2.06 1.27.22.09.45.07.61-.11.2-.23.46-.6.71-.95.18-.26.41-.22.66-.13.25.09 1.59.75 1.85.88.26.13.43.19.49.3.06.11.06.62-1.16.66z"/></svg>`,
+      TELEGRAM: `<svg viewBox="0 0 24 24"><path d="M9.78 15.73 9.6 18.9c.31 0 .45-.13.62-.29l1.49-1.43 3.09 2.27c.57.31 1.02.15 1.18-.52l2.14-10.08c.19-.86-.31-1.2-.88-.99L4.3 11.2c-.83.32-.82.78-.14.99l3.67 1.15 8.53-5.38c.4-.26.77-.12.47.16l-6.05 7.61z"/></svg>`,
+      INSTAGRAM: `<svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.26.07 1.64.07 4.85s-.01 3.58-.07 4.85c-.15 3.22-1.66 4.77-4.92 4.92-1.26.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.01 15.67 2 15.26 2 12s.01-3.58.07-4.85C2.22 3.9 3.74 2.38 7.15 2.23 8.41 2.17 8.8 2.16 12 2.16zm0-2.16C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12c0 3.26.01 3.67.07 4.95.2 4.36 2.62 6.78 6.98 6.98C8.33 23.99 8.74 24 12 24c3.26 0 3.67-.01 4.95-.07 4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95 0-3.26-.01-3.67-.07-4.95C23.73 2.7 21.31.27 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.41-10.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>`,
+    };
+
+    const callIcons = {
+      incoming: `<svg viewBox="0 0 24 24"><path d="M20 5.41 18.59 4 7 15.59V9H5v10h10v-2H8.41L20 5.41z"/></svg>`,
+      outgoing: `<svg viewBox="0 0 24 24"><path d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z"/></svg>`,
+      missed: `<svg viewBox="0 0 24 24"><path d="M19.59 7 12 14.59 6.41 9H11V7H3v8h2v-4.59l7 7 9-9L19.59 7z"/></svg>`,
+      other: `<svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8z"/></svg>`,
+    };
+
+    function socialClass(type) {
       if (type === "WHATSAPP") return "wa";
       if (type === "TELEGRAM") return "tg";
       if (type === "INSTAGRAM") return "ig";
@@ -527,108 +562,59 @@
       return type;
     }
 
-    function parseCall(item) {
-      const content = String(item.content || "");
-      const parts = content.split("·").map((p) => p.trim()).filter(Boolean);
-      const direction = parts[0] || "Call";
-      const number = parts[1] || item.sender || "";
-      let duration = parts[2] || "";
-      duration = duration.replace(/^duration\s*=\s*/i, "").trim();
-      const kind = /missed/i.test(direction)
-        ? "missed"
-        : /outgoing/i.test(direction)
-          ? "outgoing"
-          : /incoming/i.test(direction)
-            ? "incoming"
-            : "other";
-      return { direction, number, duration, kind };
-    }
-
-    function sortNewestFirst(items) {
-      return [...items].sort((a, b) => {
-        // Prefer original phone/event time so re-synced old alerts don't jump to top
-        const aTime = Number(a?.timestamp ?? a?.receivedAt ?? 0);
-        const bTime = Number(b?.timestamp ?? b?.receivedAt ?? 0);
-        if (bTime !== aTime) return bTime - aTime;
-        const aRecv = Number(a?.receivedAt ?? 0);
-        const bRecv = Number(b?.receivedAt ?? 0);
-        if (bRecv !== aRecv) return bRecv - aRecv;
-        return String(b?.id ?? "").localeCompare(String(a?.id ?? ""));
-      });
-    }
-
-    function eventTime(item) {
-      return item?.timestamp || item?.receivedAt || 0;
-    }
-
-    const callIcons = {
-      incoming: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 5.41 18.59 4 7 15.59V9H5v10h10v-2H8.41L20 5.41z"/></svg>`,
-      outgoing: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z"/></svg>`,
-      missed: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M19.59 7 12 14.59 6.41 9H11V7H3v8h2v-4.59l7 7 9-9L19.59 7z"/></svg>`,
-      other: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8z"/></svg>`,
-    };
-
-    const socialIcons = {
-      WHATSAPP: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.37c1.45.78 3.08 1.2 4.74 1.2 5.46 0 9.91-4.45 9.91-9.91C21.95 6.46 17.5 2 12.04 2zm4.55 13.65c-.19.53-.93.98-1.51 1.1-.4.08-.92.14-2.67-.58-2.24-.93-3.68-3.19-3.79-3.34-.11-.15-.9-1.2-.9-2.28 0-1.08.55-1.61.77-1.84.19-.2.49-.29.76-.29h.24c.21.01.31.02.45.36.17.41.59 1.43.64 1.54.05.11.1.26.03.41-.07.15-.13.22-.24.35-.11.13-.21.22-.32.36-.12.13-.25.27-.1.52.15.25.66 1.09 1.42 1.76.98.87 1.78 1.15 2.06 1.27.22.09.45.07.61-.11.2-.23.46-.6.71-.95.18-.26.41-.22.66-.13.25.09 1.59.75 1.85.88.26.13.43.19.49.3.06.11.06.62-1.16.66z"/></svg>`,
-      TELEGRAM: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.78 15.73 9.6 18.9c.31 0 .45-.13.62-.29l1.49-1.43 3.09 2.27c.57.31 1.02.15 1.18-.52l2.14-10.08c.19-.86-.31-1.2-.88-.99L4.3 11.2c-.83.32-.82.78-.14.99l3.67 1.15 8.53-5.38c.4-.26.77-.12.47.16l-6.05 7.61z"/></svg>`,
-      INSTAGRAM: `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.26.07 1.64.07 4.85s-.01 3.58-.07 4.85c-.15 3.22-1.66 4.77-4.92 4.92-1.26.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.01 15.67 2 15.26 2 12s.01-3.58.07-4.85C2.22 3.9 3.74 2.38 7.15 2.23 8.41 2.17 8.8 2.16 12 2.16zm0-2.16C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12c0 3.26.01 3.67.07 4.95.2 4.36 2.62 6.78 6.98 6.98C8.33 23.99 8.74 24 12 24c3.26 0 3.67-.01 4.95-.07 4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95 0-3.26-.01-3.67-.07-4.95C23.73 2.7 21.31.27 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.41-10.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>`,
-    };
-
-    function socialIcon(type) {
-      return socialIcons[type] || socialIcons.TELEGRAM;
-    }
-
     function renderSms(item) {
       const rtl = isRtl(item.content) ? "rtl" : "";
       return `
-        <article class="msg">
-          <div class="avatar sms">${escapeHtml(initials(item.sender))}</div>
-          <div class="msg-main">
-            <div class="msg-top">
-              <p class="sender">${escapeHtml(item.sender)}</p>
-              <time class="when">${escapeHtml(formatWhen(eventTime(item)))}</time>
-            </div>
-            <p class="bubble ${rtl}">${escapeHtml(item.content)}</p>
+        <article class="msg-block">
+          <div class="msg-meta">
+            <span class="who">${escapeHtml(item.sender)}</span>
+            <span class="at">${escapeHtml(formatExact(eventTime(item)))}</span>
           </div>
+          <p class="bubble ${rtl}">${escapeHtml(item.content)}</p>
         </article>`;
     }
 
     function renderSocial(item) {
       const type = normalizeType(item.messageType);
+      const cls = socialClass(type);
       const rtl = isRtl(item.content) ? "rtl" : "";
+      const icon = socialIcons[type] || socialIcons.TELEGRAM;
       return `
-        <article class="notif">
-          <div class="avatar ${socialAvatarClass(type)}" title="${escapeHtml(socialLabel(type))}">${socialIcon(type)}</div>
-          <div class="notif-body">
-            <p class="notif-app">${escapeHtml(socialLabel(type))}</p>
-            <p class="notif-title">${escapeHtml(item.sender)}</p>
-            <p class="notif-text ${rtl}">${escapeHtml(item.content)}</p>
-            <div class="notif-meta">${escapeHtml(formatWhen(eventTime(item)))}</div>
+        <article class="row">
+          <div class="avatar ${cls}">
+            ${escapeHtml(initials(item.sender))}
+            <span class="badge-app ${cls}">${icon}</span>
+          </div>
+          <div class="row-main">
+            <div class="row-top">
+              <p class="name">${escapeHtml(item.sender)}</p>
+            </div>
+            <p class="preview ${rtl}">${escapeHtml(item.content)}</p>
+          </div>
+          <div class="meta-col">
+            <span class="when">${escapeHtml(formatWhen(eventTime(item)))}</span>
+            <span class="count-badge" title="${escapeHtml(socialLabel(type))}">1</span>
           </div>
         </article>`;
     }
 
     function renderCall(item) {
       const parsed = parseCall(item);
-      const kindClass = parsed.kind;
-      const subParts = [parsed.direction, parsed.number, parsed.duration].filter(Boolean);
-      const sub = subParts.join(" · ");
       const icon = callIcons[parsed.kind] || callIcons.other;
+      const preview = [parsed.direction, parsed.duration].filter(Boolean).join(" · ");
       return `
-        <article class="call">
-          <div class="call-icon ${kindClass}">${icon}</div>
-          <div>
-            <p class="call-name">${escapeHtml(item.sender)}</p>
-            <p class="call-sub ${kindClass === "missed" ? "missed" : ""}">${escapeHtml(sub)}</p>
+        <article class="row">
+          <div class="avatar ${parsed.kind}">${icon}</div>
+          <div class="row-main">
+            <div class="row-top">
+              <p class="name">${escapeHtml(item.sender)}</p>
+            </div>
+            <p class="preview">${escapeHtml(preview || parsed.number)}</p>
           </div>
-          <time class="call-time">${escapeHtml(formatWhen(eventTime(item)))}</time>
+          <div class="meta-col">
+            <span class="when">${escapeHtml(formatWhen(eventTime(item)))}</span>
+          </div>
         </article>`;
-    }
-
-    function renderItem(item) {
-      if (activeTab === "sms") return renderSms(item);
-      if (activeTab === "social") return renderSocial(item);
-      return renderCall(item);
     }
 
     function filteredItems() {
@@ -638,23 +624,38 @@
     }
 
     function updateCounts() {
-      document.getElementById("count-sms").textContent =
-        String(allItems.filter((i) => TABS.sms.match(normalizeType(i.messageType))).length);
-      document.getElementById("count-social").textContent =
-        String(allItems.filter((i) => TABS.social.match(normalizeType(i.messageType))).length);
-      document.getElementById("count-calls").textContent =
-        String(allItems.filter((i) => TABS.calls.match(normalizeType(i.messageType))).length);
+      const map = {
+        sms: allItems.filter((i) => TABS.sms.match(normalizeType(i.messageType))).length,
+        social: allItems.filter((i) => TABS.social.match(normalizeType(i.messageType))).length,
+        calls: allItems.filter((i) => TABS.calls.match(normalizeType(i.messageType))).length,
+      };
+      for (const [key, value] of Object.entries(map)) {
+        const el = document.getElementById(`count-${key}`);
+        el.textContent = value > 99 ? "99+" : String(value);
+        el.classList.toggle("show", value > 0);
+      }
     }
 
     function paint() {
       updateCounts();
-      subtitleEl.textContent = TABS[activeTab].subtitle;
+      pageTitle.textContent = TABS[activeTab].title;
       const items = filteredItems();
       if (!items.length) {
         feed.innerHTML = `<div class="empty">${escapeHtml(TABS[activeTab].empty)}</div>`;
         return;
       }
-      feed.innerHTML = items.map(renderItem).join("");
+
+      if (activeTab === "sms") {
+        feed.innerHTML = `<div class="bubble-wrap">${items.map(renderSms).join("")}</div>`;
+        return;
+      }
+
+      if (activeTab === "social") {
+        feed.innerHTML = items.map(renderSocial).join("");
+        return;
+      }
+
+      feed.innerHTML = items.map(renderCall).join("");
     }
 
     async function loadMessages() {
@@ -717,10 +718,10 @@
       watchAbort?.abort();
     }
 
-    document.querySelectorAll(".tab").forEach((btn) => {
+    document.querySelectorAll(".nav-item").forEach((btn) => {
       btn.addEventListener("click", () => {
         activeTab = btn.dataset.tab;
-        document.querySelectorAll(".tab").forEach((el) => el.classList.toggle("active", el === btn));
+        document.querySelectorAll(".nav-item").forEach((el) => el.classList.toggle("active", el === btn));
         paint();
       });
     });
@@ -733,7 +734,6 @@
     });
 
     window.addEventListener("beforeunload", stopWatching);
-
     loadMessages().then(watchForUpdates);
   </script>
 </body>
