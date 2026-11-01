@@ -10,7 +10,7 @@ import { MessageStore } from "./store/messageStore.js";
 import { createStoreFromEnv } from "./store/redisStore.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const dashboardHtml = readFileSync(join(__dirname, "views", "dashboard.html"), "utf8");
+const dashboardPath = join(__dirname, "views", "dashboard.html");
 
 const PORT = Number.parseInt(process.env.PORT || "3000", 10);
 const AUTH_TOKEN = process.env.AUTH_TOKEN || "";
@@ -24,7 +24,7 @@ app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
 app.get("/", (_req, res) => {
-  res.type("html").send(dashboardHtml);
+  res.type("html").send(readFileSync(dashboardPath, "utf8"));
 });
 
 app.get("/health", (_req, res) => {
