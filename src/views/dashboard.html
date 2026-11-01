@@ -312,21 +312,31 @@
       place-items: center;
     }
 
-    .bubble-wrap { padding: 8px 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+    .chat-thread {
+      padding: 10px 14px 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-height: 100%;
+    }
     .msg-block {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
-      gap: 6px;
-      max-width: 92%;
+      gap: 5px;
+      max-width: 88%;
       cursor: pointer;
       user-select: none;
       animation: fadeIn 0.28s ease both;
     }
     .msg-block.selected .bubble { outline: 2px solid var(--blue); }
-    .msg-meta { display: flex; align-items: center; gap: 8px; padding-inline: 4px; }
-    .msg-meta .who { font-size: 0.78rem; font-weight: 700; }
-    .msg-meta .at { font-size: 0.72rem; color: var(--muted); }
+    .msg-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding-inline: 4px;
+    }
+    .msg-meta .at { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
     .bubble {
       margin: 0;
       padding: 12px 14px;
@@ -338,12 +348,47 @@
       line-height: 1.55;
       white-space: pre-wrap;
       word-break: break-word;
+    }
+    .bubble.rtl { direction: rtl; text-align: right; border-radius: 18px 4px 18px 18px; }
+    .bubble.clamp {
       display: -webkit-box;
       -webkit-line-clamp: 4;
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    .bubble.rtl { direction: rtl; text-align: right; border-radius: 18px 4px 18px 18px; }
+
+    .title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      min-width: 0;
+      flex: 1;
+    }
+    .back-btn {
+      display: none;
+      width: 40px;
+      height: 40px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--ink);
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      margin-left: -8px;
+    }
+    .back-btn.show { display: grid; }
+    .back-btn:hover { background: var(--line); }
+    .back-btn svg { width: 22px; height: 22px; fill: currentColor; }
+    .title.chat-title {
+      font-size: 1.15rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      cursor: pointer;
+    }
+    .phone.in-chat .bottom-nav { display: none; }
+    .phone.in-chat .feed { padding-bottom: 28px; }
 
     .bottom-nav {
       position: sticky;
@@ -594,7 +639,12 @@
   <div class="phone" id="app">
     <header class="app-header">
       <div class="header-row">
-        <h1 class="title" id="pageTitle">Messages</h1>
+        <div class="title-wrap">
+          <button type="button" class="back-btn" id="backBtn" title="Back" aria-label="Back">
+            <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+          </button>
+          <h1 class="title" id="pageTitle">Messages</h1>
+        </div>
         <div class="header-actions">
           <button type="button" class="icon-btn" id="searchToggle" title="Search">
             <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
@@ -669,10 +719,10 @@
 
   <script>
     const TABS = {
-      sms: { title: "Messages", empty: "No SMS yet", match: (t) => t === "SMS" },
+      sms: { title: "Messages", empty: "No conversations yet", match: (t) => t === "SMS" },
       social: {
         title: "Social",
-        empty: "No social notifications yet",
+        empty: "No conversations yet",
         match: (t) => ["WHATSAPP", "TELEGRAM", "INSTAGRAM", "SOCIAL", "NOTIFICATION"].includes(t),
       },
       calls: {
@@ -700,9 +750,11 @@
     let searchQuery = "";
     let selecting = false;
     let selectedIds = new Set();
+    let openConversation = null;
     let currentVersion = 0;
     let watchAbort = null;
     let watching = false;
+    const backBtn = document.getElementById("backBtn");
 
     const trashIcon = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
     const checkIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
@@ -837,42 +889,77 @@
       return `<div class="check">${on ? checkIcon : ""}</div>`;
     }
 
-    function renderSms(item) {
+    function conversationKey(item) {
+      return String(item.sender || "Unknown").trim() || "Unknown";
+    }
+
+    function buildConversations(items) {
+      const map = new Map();
+      for (const item of items) {
+        const key = conversationKey(item);
+        if (!map.has(key)) map.set(key, []);
+        map.get(key).push(item);
+      }
+      return [...map.entries()]
+        .map(([sender, messages]) => {
+          const sorted = sortNewestFirst(messages);
+          return {
+            sender,
+            messages: sorted,
+            latest: sorted[0],
+            ids: sorted.map((m) => m.id),
+            count: sorted.length,
+          };
+        })
+        .sort((a, b) => eventTime(b.latest) - eventTime(a.latest));
+    }
+
+    function renderConversation(conv, kind) {
+      const latest = conv.latest;
+      const type = normalizeType(latest.messageType);
+      const rtl = isRtl(latest.content) ? "rtl" : "";
+      const selected = conv.ids.some((id) => selectedIds.has(id)) ? "selected" : "";
+      const selectKey = conv.ids[0];
+
+      let avatarHtml = "";
+      if (kind === "sms") {
+        avatarHtml = `<div class="avatar sms" data-open="contact">${escapeHtml(initials(conv.sender))}</div>`;
+      } else {
+        const cls = socialClass(type);
+        const icon = socialIcons[type] || socialIcons.TELEGRAM;
+        avatarHtml = `
+          <div class="avatar ${cls}" data-open="contact">
+            ${escapeHtml(initials(conv.sender))}
+            <span class="badge-app ${cls}">${icon}</span>
+          </div>`;
+      }
+
+      const html = `
+        <article class="row ${selected}" data-conversation="${escapeHtml(conv.sender)}" data-id="${escapeHtml(selectKey)}" data-ids="${escapeHtml(conv.ids.join(","))}">
+          ${checkHtml(selectKey)}
+          ${avatarHtml}
+          <div class="row-main" data-open="conversation">
+            <div class="row-top"><p class="name">${escapeHtml(conv.sender)}</p></div>
+            <p class="preview ${rtl}">${escapeHtml(latest.content || "")}</p>
+          </div>
+          <div class="meta-col" data-open="conversation">
+            <span class="when">${escapeHtml(formatWhen(eventTime(latest)))}</span>
+            ${conv.count > 1 ? `<span class="count-badge">${conv.count > 99 ? "99+" : conv.count}</span>` : ""}
+          </div>
+        </article>`;
+      return selecting ? html : wrapSwipe(html, selectKey);
+    }
+
+    function renderThreadMessage(item) {
       const rtl = isRtl(item.content) ? "rtl" : "";
       const selected = selectedIds.has(item.id) ? "selected" : "";
       const html = `
         <article class="msg-block ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
           <div class="msg-meta">
             ${selecting ? checkHtml(item.id) : ""}
-            <span class="who" data-open="contact">${escapeHtml(item.sender)}</span>
-            <span class="at">${escapeHtml(formatClock(eventTime(item)))}</span>
+            <span class="at">${escapeHtml(formatExact(eventTime(item)))}</span>
           </div>
           <p class="bubble ${rtl}" data-open="message">${escapeHtml(item.content)}</p>
-        </article>`;
-      return selecting ? html : wrapSwipe(html, item.id);
-    }
-
-    function renderSocial(item) {
-      const type = normalizeType(item.messageType);
-      const cls = socialClass(type);
-      const rtl = isRtl(item.content) ? "rtl" : "";
-      const icon = socialIcons[type] || socialIcons.TELEGRAM;
-      const selected = selectedIds.has(item.id) ? "selected" : "";
-      const html = `
-        <article class="row ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
-          ${checkHtml(item.id)}
-          <div class="avatar ${cls}" data-open="contact">
-            ${escapeHtml(initials(item.sender))}
-            <span class="badge-app ${cls}">${icon}</span>
-          </div>
-          <div class="row-main" data-open="message">
-            <div class="row-top"><p class="name">${escapeHtml(item.sender)}</p></div>
-            <p class="preview ${rtl}">${escapeHtml(item.content)}</p>
-          </div>
-          <div class="meta-col" data-open="message">
-            <span class="when">${escapeHtml(formatWhen(eventTime(item)))}</span>
-            <span class="count-badge">1</span>
-          </div>
         </article>`;
       return selecting ? html : wrapSwipe(html, item.id);
     }
@@ -906,9 +993,11 @@
     }
 
     function updateCounts() {
+      const smsItems = allItems.filter((i) => TABS.sms.match(normalizeType(i.messageType)));
+      const socialItems = allItems.filter((i) => TABS.social.match(normalizeType(i.messageType)));
       const map = {
-        sms: allItems.filter((i) => TABS.sms.match(normalizeType(i.messageType))).length,
-        social: allItems.filter((i) => TABS.social.match(normalizeType(i.messageType))).length,
+        sms: buildConversations(smsItems).length,
+        social: buildConversations(socialItems).length,
         calls: allItems.filter((i) => TABS.calls.match(normalizeType(i.messageType))).length,
       };
       for (const [key, value] of Object.entries(map)) {
@@ -924,28 +1013,68 @@
       app.classList.toggle("selecting", selecting);
       document.getElementById("livePill").textContent = selecting
         ? "Selection mode"
-        : "Live sync · hold to select";
+        : openConversation
+          ? "Tap a message for details"
+          : "Live sync · hold to select";
+    }
+
+    function updateChrome() {
+      const inChat = Boolean(openConversation) && (activeTab === "sms" || activeTab === "social");
+      app.classList.toggle("in-chat", inChat);
+      backBtn.classList.toggle("show", inChat);
+      pageTitle.classList.toggle("chat-title", inChat);
+      pageTitle.textContent = inChat ? openConversation : TABS[activeTab].title;
+      searchToggle.style.display = inChat ? "none" : "";
+      if (inChat && searchBox.classList.contains("open")) {
+        searchBox.classList.remove("open");
+        searchToggle.classList.remove("active");
+      }
     }
 
     function paint() {
       updateCounts();
       updateSelectBar();
-      pageTitle.textContent = TABS[activeTab].title;
+      updateChrome();
+
       const items = filteredItems();
+
+      if (openConversation && (activeTab === "sms" || activeTab === "social")) {
+        const thread = sortNewestFirst(
+          items.filter((item) => conversationKey(item) === openConversation)
+        ).reverse();
+        if (thread.length) {
+          feed.innerHTML = `<div class="chat-thread">${thread.map(renderThreadMessage).join("")}</div>`;
+          bindSwipeHandlers();
+          requestAnimationFrame(() => {
+            feed.scrollTop = feed.scrollHeight;
+          });
+          return;
+        }
+        openConversation = null;
+        updateChrome();
+      }
+
       if (!items.length) {
         feed.innerHTML = `<div class="empty">${escapeHtml(
           searchQuery.trim() ? "No results for this search" : TABS[activeTab].empty
         )}</div>`;
         return;
       }
+
       if (activeTab === "sms") {
-        feed.innerHTML = `<div class="bubble-wrap">${items.map(renderSms).join("")}</div>`;
+        feed.innerHTML = buildConversations(items).map((c) => renderConversation(c, "sms")).join("");
       } else if (activeTab === "social") {
-        feed.innerHTML = items.map(renderSocial).join("");
+        feed.innerHTML = buildConversations(items).map((c) => renderConversation(c, "social")).join("");
       } else {
         feed.innerHTML = items.map(renderCall).join("");
       }
       bindSwipeHandlers();
+    }
+
+    function closeConversation() {
+      openConversation = null;
+      if (selecting) exitSelect();
+      else paint();
     }
 
     function fillAvatar(el, item) {
@@ -1056,6 +1185,13 @@
       sheet.setAttribute("aria-hidden", "true");
     }
 
+    function idsForElement(el) {
+      if (!el) return [];
+      if (el.dataset.ids) return el.dataset.ids.split(",").filter(Boolean);
+      if (el.dataset.id) return [el.dataset.id];
+      return [];
+    }
+
     function enterSelect(id) {
       selecting = true;
       selectedIds = new Set(id ? [id] : []);
@@ -1074,6 +1210,17 @@
       else selectedIds.add(id);
       if (!selectedIds.size) exitSelect();
       else paint();
+    }
+
+    function expandSelectedIds() {
+      const expanded = new Set();
+      for (const id of selectedIds) {
+        const row = [...feed.querySelectorAll("[data-id]")].find((el) => el.dataset.id === id);
+        const ids = idsForElement(row);
+        if (ids.length) ids.forEach((x) => expanded.add(x));
+        else expanded.add(id);
+      }
+      return [...expanded];
     }
 
     async function deleteIds(ids) {
@@ -1173,7 +1320,8 @@
       clearTimeout(pressTimer);
       pressTimer = setTimeout(() => {
         if (!pressMoved && pressTarget) {
-          enterSelect(pressTarget.dataset.id);
+          const ids = idsForElement(pressTarget);
+          enterSelect(ids[0] || pressTarget.dataset.id);
           pressTarget = null;
         }
       }, 480);
@@ -1191,7 +1339,9 @@
       const swipeDelete = event.target.closest("[data-action='swipe-delete']");
       if (swipeDelete) {
         event.preventDefault();
-        await deleteIds([swipeDelete.dataset.id]);
+        const swipeRow = swipeDelete.closest(".swipe")?.querySelector("[data-id]");
+        const ids = idsForElement(swipeRow);
+        await deleteIds(ids.length ? ids : [swipeDelete.dataset.id]);
         return;
       }
 
@@ -1205,10 +1355,21 @@
       }
 
       const openType = event.target.closest("[data-open]")?.dataset.open;
+
+      if (itemEl.dataset.conversation && (openType === "conversation" || openType === "contact" || !openType)) {
+        if (openType === "contact" || event.target.closest(".avatar")) {
+          openContactSheet(itemEl.dataset.conversation);
+          return;
+        }
+        openConversation = itemEl.dataset.conversation;
+        paint();
+        return;
+      }
+
       const item = allItems.find((entry) => entry.id === id);
       if (!item) return;
 
-      if (openType === "contact" || event.target.closest(".avatar") || event.target.closest(".who")) {
+      if (openType === "contact" || event.target.closest(".avatar")) {
         openContactSheet(item.sender);
         return;
       }
@@ -1297,10 +1458,15 @@
 
     document.getElementById("selectCancel").addEventListener("click", exitSelect);
     document.getElementById("selectDelete").addEventListener("click", async () => {
-      const ids = [...selectedIds];
+      const ids = expandSelectedIds();
       if (!ids.length) return;
       if (!confirm(`Delete ${ids.length} item(s)?`)) return;
       await deleteIds(ids);
+    });
+
+    backBtn.addEventListener("click", closeConversation);
+    pageTitle.addEventListener("click", () => {
+      if (openConversation) openContactSheet(openConversation);
     });
 
     document.getElementById("sheetClose").addEventListener("click", closeSheet);
@@ -1309,12 +1475,14 @@
       if (e.key === "Escape") {
         closeSheet();
         if (selecting) exitSelect();
+        else if (openConversation) closeConversation();
       }
     });
 
     document.querySelectorAll(".nav-item").forEach((btn) => {
       btn.addEventListener("click", () => {
         activeTab = btn.dataset.tab;
+        openConversation = null;
         document.querySelectorAll(".nav-item").forEach((el) => el.classList.toggle("active", el === btn));
         if (selecting) exitSelect();
         else paint();
