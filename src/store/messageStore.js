@@ -9,6 +9,16 @@ export class MessageStore {
     this.kind = "memory";
     this.maxMessages = maxMessages;
     this.messages = [];
+    this.version = 0;
+  }
+
+  async getVersion() {
+    return this.version;
+  }
+
+  #bump() {
+    this.version += 1;
+    return this.version;
   }
 
   async add(payload) {
@@ -27,6 +37,7 @@ export class MessageStore {
       this.messages.length = this.maxMessages;
     }
 
+    this.#bump();
     return record;
   }
 
@@ -47,6 +58,7 @@ export class MessageStore {
   async clear() {
     const removed = this.messages.length;
     this.messages = [];
+    this.#bump();
     return removed;
   }
 
@@ -62,6 +74,7 @@ export class MessageStore {
       byType,
       latestReceivedAt: this.messages[0]?.receivedAt ?? null,
       storage: this.kind,
+      version: this.version,
     };
   }
 }

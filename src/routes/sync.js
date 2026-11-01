@@ -31,6 +31,10 @@ function validatePayload(body) {
   return null;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
 export function createSyncRouter(store) {
   const router = Router();
 
@@ -65,6 +69,7 @@ export function createSyncRouter(store) {
       ok: true,
       count: items.length,
       items,
+      version: await store.getVersion(),
     });
   });
 
@@ -76,13 +81,44 @@ export function createSyncRouter(store) {
     return res.json({ ok: true, item });
   });
 
+  /** Tiny endpoint — used by dashboard change detection. */
+  router.get("/version", async (_req, res) => {
+    return res.json({ ok: true, version: await store.getVersion() });
+  });
+
+  /**
+   * Long-poll: holds until version changes or timeout.
+   * Cheap alternative to polling the full message list every few seconds.
+   */
+  router.get("/wait", async (req, res) => {
+    const since = Number.parseInt(String(req.query.since ?? "0"), 10) || 0;
+    const timeoutMs = Math.min(
+      Math.max(Number.parseInt(String(req.query.timeout ?? "20000"), 10) || 20000, 1000),
+      25000
+    );
+    const started = Date.now();
+
+    let version = await store.getVersion();
+    while (version <= since && Date.now() - started < timeoutMs) {
+      if (req.aborted || res.writableEnded) return;
+      await sleep(1000);
+      version = await store.getVersion();
+    }
+
+    return res.json({
+      ok: true,
+      version,
+      changed: version > since,
+    });
+  });
+
   router.get("/stats", async (_req, res) => {
     return res.json({ ok: true, ...(await store.stats()) });
   });
 
   router.delete("/messages", async (_req, res) => {
     const removed = await store.clear();
-    return res.json({ ok: true, removed });
+    return res.json({ ok: true, removed, version: await store.getVersion() });
   });
 
   return router;

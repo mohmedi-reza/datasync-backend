@@ -450,6 +450,9 @@
 
     let activeTab = "sms";
     let allItems = [];
+    let currentVersion = 0;
+    let watchAbort = null;
+    let watching = false;
 
     function escapeHtml(value) {
       return String(value)
@@ -601,12 +604,58 @@
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
         allItems = Array.isArray(data.items) ? data.items : [];
+        if (typeof data.version === "number") currentVersion = data.version;
         paint();
       } catch (_) {
         if (!feed.children.length) {
           feed.innerHTML = `<div class="empty">Could not reach the API</div>`;
         }
       }
+    }
+
+    async function watchForUpdates() {
+      if (watching) return;
+      watching = true;
+
+      while (watching) {
+        if (document.hidden) {
+          await new Promise((resolve) => {
+            const onVisible = () => {
+              if (!document.hidden) {
+                document.removeEventListener("visibilitychange", onVisible);
+                resolve();
+              }
+            };
+            document.addEventListener("visibilitychange", onVisible);
+          });
+          await loadMessages();
+          continue;
+        }
+
+        watchAbort = new AbortController();
+        try {
+          const res = await fetch(`/api/sync/wait?since=${currentVersion}&timeout=20000`, {
+            cache: "no-store",
+            signal: watchAbort.signal,
+          });
+          if (!res.ok) throw new Error("wait failed");
+          const data = await res.json();
+          if (data.changed) {
+            currentVersion = data.version;
+            await loadMessages();
+          } else if (typeof data.version === "number") {
+            currentVersion = data.version;
+          }
+        } catch (err) {
+          if (err?.name === "AbortError") break;
+          await new Promise((r) => setTimeout(r, 2000));
+        }
+      }
+    }
+
+    function stopWatching() {
+      watching = false;
+      watchAbort?.abort();
     }
 
     document.querySelectorAll(".tab").forEach((btn) => {
@@ -624,8 +673,9 @@
       await loadMessages();
     });
 
-    loadMessages();
-    setInterval(loadMessages, 2000);
+    window.addEventListener("beforeunload", stopWatching);
+
+    loadMessages().then(watchForUpdates);
   </script>
 </body>
 </html>

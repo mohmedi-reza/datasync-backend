@@ -2,6 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Redis } from "@upstash/redis";
 
 const KEY = "datasync:messages";
+const VERSION_KEY = "datasync:version";
 
 /**
  * Durable store via Upstash Redis. Survives Vercel rebuilds/redeploys.
@@ -11,6 +12,16 @@ export class RedisStore {
     this.kind = "redis";
     this.maxMessages = maxMessages;
     this.redis = new Redis({ url, token });
+  }
+
+  async getVersion() {
+    const value = await this.redis.get(VERSION_KEY);
+    const n = Number(value);
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  async #bump() {
+    return this.redis.incr(VERSION_KEY);
   }
 
   async #readAll() {
@@ -48,6 +59,7 @@ export class RedisStore {
       messages.length = this.maxMessages;
     }
     await this.#writeAll(messages);
+    await this.#bump();
     return record;
   }
 
@@ -70,6 +82,7 @@ export class RedisStore {
     const messages = await this.#readAll();
     const removed = messages.length;
     await this.redis.del(KEY);
+    await this.#bump();
     return removed;
   }
 
@@ -86,6 +99,7 @@ export class RedisStore {
       byType,
       latestReceivedAt: messages[0]?.receivedAt ?? null,
       storage: this.kind,
+      version: await this.getVersion(),
     };
   }
 }
