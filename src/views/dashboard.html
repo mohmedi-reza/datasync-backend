@@ -63,7 +63,7 @@
       padding: 22px 20px 12px;
       background: rgba(255,255,255,0.96);
       backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--line);
+      border-bottom: 0;
       flex-shrink: 0;
       position: sticky;
       top: 0;
@@ -99,24 +99,7 @@
     }
     .icon-btn:hover, .icon-btn.active { background: var(--line); color: var(--ink); }
     .icon-btn.danger { color: var(--red); }
-    .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
-
-    .live-pill {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      margin-top: 6px;
-      font-size: 0.78rem;
-      font-weight: 500;
-      color: var(--muted);
-    }
-    .live-pill i {
-      width: 7px;
-      height: 7px;
-      border-radius: 50%;
-      background: var(--green);
-      animation: pulse 1.8s ease infinite;
-    }
+    .icon-btn svg { width: 20px; height: 20px; stroke: currentColor; fill: none; }
 
     .search-box { display: none; margin-top: 12px; position: relative; }
     .search-box.open { display: block; }
@@ -138,7 +121,13 @@
       transform: translateY(-50%);
       width: 18px;
       height: 18px;
-      fill: var(--muted);
+      color: var(--muted);
+    }
+    .search-box .search-ico svg {
+      width: 18px;
+      height: 18px;
+      stroke: currentColor;
+      fill: none;
     }
     .search-box .clear-ico-btn {
       position: absolute;
@@ -156,7 +145,7 @@
       cursor: pointer;
     }
     .search-box .clear-ico-btn.show { display: grid; }
-    .search-box .clear-ico-btn svg { width: 16px; height: 16px; fill: currentColor; }
+    .search-box .clear-ico-btn svg { width: 16px; height: 16px; stroke: currentColor; fill: none; }
 
     .select-bar {
       display: none;
@@ -173,12 +162,59 @@
     .select-bar .actions { display: flex; gap: 6px; }
 
     .feed {
+      --feed-fade-top: 0px;
+      --feed-fade-bottom: 0px;
       flex: 1 1 auto;
       min-height: 0;
       overflow: auto;
-      padding: 4px 8px 16px;
+      padding: 4px 8px 20px;
       overscroll-behavior: contain;
       -webkit-overflow-scrolling: touch;
+      scroll-behavior: smooth;
+      scroll-padding-bottom: 12px;
+      scrollbar-gutter: stable;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(143, 155, 179, 0.4) transparent;
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--feed-fade-top),
+        #000 calc(100% - var(--feed-fade-bottom)),
+        transparent 100%
+      );
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0,
+        #000 var(--feed-fade-top),
+        #000 calc(100% - var(--feed-fade-bottom)),
+        transparent 100%
+      );
+    }
+    .feed.can-scroll-up { --feed-fade-top: 16px; }
+    .feed.can-scroll-down { --feed-fade-bottom: 22px; }
+    .feed::-webkit-scrollbar {
+      width: 5px;
+    }
+    .feed::-webkit-scrollbar-track {
+      background: transparent;
+      margin: 12px 0;
+    }
+    .feed::-webkit-scrollbar-thumb {
+      background: rgba(143, 155, 179, 0.32);
+      border-radius: 999px;
+    }
+    .feed::-webkit-scrollbar-thumb:hover {
+      background: rgba(143, 155, 179, 0.52);
+    }
+    .feed::-webkit-scrollbar-thumb:active {
+      background: rgba(59, 111, 245, 0.5);
+    }
+    @media (hover: none) and (pointer: coarse) {
+      .feed {
+        scrollbar-width: none;
+        scrollbar-gutter: auto;
+      }
+      .feed::-webkit-scrollbar { display: none; }
     }
 
     .empty {
@@ -207,7 +243,7 @@
       color: #fff;
       z-index: 0;
     }
-    .swipe-actions svg { width: 22px; height: 22px; fill: currentColor; }
+    .swipe-actions svg { width: 22px; height: 22px; stroke: currentColor; fill: none; }
 
     .swipe-front {
       position: relative;
@@ -248,7 +284,7 @@
       border-color: var(--blue);
       color: #fff;
     }
-    .row.selected .check svg { width: 12px; height: 12px; fill: currentColor; }
+    .row.selected .check svg { width: 12px; height: 12px; stroke: currentColor; fill: none; stroke-width: 3; }
 
     .avatar {
       width: 52px;
@@ -271,13 +307,13 @@
     .avatar.outgoing { background: var(--blue-soft); color: var(--blue); }
     .avatar.missed { background: #fee2e2; color: var(--red); }
     .avatar.other { background: #e2e8f0; color: #475569; }
-    .avatar svg { width: 24px; height: 24px; fill: currentColor; }
+    .avatar svg { width: 24px; height: 24px; stroke: currentColor; fill: none; }
     .avatar .badge-app {
       position: absolute;
-      right: -2px;
-      bottom: -2px;
-      width: 20px;
-      height: 20px;
+      right: -4px;
+      bottom: -4px;
+      width: 26px;
+      height: 26px;
       border-radius: 50%;
       border: 2px solid #fff;
       display: grid;
@@ -286,18 +322,21 @@
     .avatar .badge-app.wa { background: var(--wa); }
     .avatar .badge-app.tg { background: var(--tg); }
     .avatar .badge-app.ig { background: var(--ig); }
-    .avatar .badge-app svg { width: 11px; height: 11px; fill: #fff; }
+    .avatar .badge-app svg { width: 12px; height: 12px; stroke: #fff; fill: none; stroke-width: 2.5; }
 
     .row-main { min-width: 0; }
     .row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
     .name {
       margin: 0;
       font-size: 0.98rem;
-      font-weight: 700;
+      font-weight: 600;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
+    .row.unread .name { font-weight: 800; }
+    .row.unread .preview { color: var(--ink); font-weight: 600; }
+    .row.unread .when { color: var(--blue); font-weight: 700; }
     .when { font-size: 0.75rem; font-weight: 500; color: var(--muted); white-space: nowrap; }
     .preview {
       margin: 0;
@@ -392,7 +431,7 @@
     }
     .back-btn.show { display: grid; }
     .back-btn:hover { background: var(--line); }
-    .back-btn svg { width: 22px; height: 22px; fill: currentColor; }
+    .back-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; }
     .title.chat-title {
       font-size: 1.15rem;
       white-space: nowrap;
@@ -404,7 +443,7 @@
       flex-shrink: 0;
       background: rgba(255,255,255,0.96);
       backdrop-filter: blur(12px);
-      border-top: 1px solid var(--line);
+      border-top: 0;
       padding: 10px 18px calc(12px + env(safe-area-inset-bottom));
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -426,7 +465,7 @@
       cursor: pointer;
       position: relative;
     }
-    .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
+    .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; }
     .nav-item .dot-count {
       position: absolute;
       top: 0;
@@ -545,7 +584,7 @@
       flex-shrink: 0;
     }
     .sheet-close:hover { background: var(--line); color: var(--ink); }
-    .sheet-close svg { width: 18px; height: 18px; fill: currentColor; }
+    .sheet-close svg { width: 18px; height: 18px; stroke: currentColor; fill: none; }
 
     .sheet-body {
       flex: 1;
@@ -638,11 +677,6 @@
     }
     .sheet-list-item .text.rtl { direction: rtl; text-align: right; }
 
-    @keyframes pulse {
-      0% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.45); }
-      70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
-      100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
-    }
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
@@ -655,29 +689,27 @@
       <div class="header-row">
         <div class="title-wrap">
           <button type="button" class="back-btn" id="backBtn" title="Back" aria-label="Back">
-            <svg viewBox="0 0 24 24"><path d="M15.41 7.41 14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m15 18-6-6 6-6"/></svg>
           </button>
           <h1 class="title" id="pageTitle">Messages</h1>
         </div>
         <div class="header-actions">
           <button type="button" class="icon-btn" id="searchToggle" title="Search">
-            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
           </button>
           <button type="button" class="icon-btn" id="refreshBtn" title="Refresh">
-            <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 0 1-8.9 3.1L6.7 16.5A7.97 7.97 0 0 0 20 12c0-2.21-.9-4.21-2.35-5.65zM6 12c0-1.48.65-2.8 1.69-3.71L6.35 6.94A7.97 7.97 0 0 0 4 12c0 3.87 2.75 7.1 6.37 7.85l.63-1.98A6.001 6.001 0 0 1 6 12z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></svg>
           </button>
           <button type="button" class="icon-btn" id="clearBtn" title="Clear all">
-            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
           </button>
         </div>
       </div>
-      <div class="live-pill" id="livePill"><i></i> Live sync · hold to select</div>
-
       <div class="search-box" id="searchBox">
-        <svg class="search-ico" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <span class="search-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg></span>
         <input id="searchInput" type="search" placeholder="Search messages..." autocomplete="off" />
         <button type="button" class="clear-ico-btn" id="searchClear">
-          <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
 
@@ -685,10 +717,10 @@
         <strong id="selectCount">0 selected</strong>
         <div class="actions">
           <button type="button" class="icon-btn" id="selectCancel" title="Cancel">
-            <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
           </button>
           <button type="button" class="icon-btn danger" id="selectDelete" title="Delete selected">
-            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
           </button>
         </div>
       </div>
@@ -699,17 +731,17 @@
     <nav class="bottom-nav">
       <button type="button" class="nav-item active" data-tab="sms">
         <span class="dot-count" id="count-sms">0</span>
-        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
         SMS
       </button>
       <button type="button" class="nav-item" data-tab="social">
         <span class="dot-count" id="count-social">0</span>
-        <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4l4 4 4-4h4c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2z"/><path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/></svg>
         Social
       </button>
       <button type="button" class="nav-item" data-tab="calls">
         <span class="dot-count" id="count-calls">0</span>
-        <svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8z"/></svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
         Calls
       </button>
     </nav>
@@ -724,7 +756,7 @@
           <p id="sheetSubtitle">—</p>
         </div>
         <button type="button" class="sheet-close" id="sheetClose" aria-label="Close">
-          <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
       <div class="sheet-body" id="sheetBody"></div>
@@ -759,6 +791,13 @@
     const sheetBackdrop = document.getElementById("sheetBackdrop");
     const sheetBody = document.getElementById("sheetBody");
 
+    function updateFeedScrollEdges() {
+      const max = feed.scrollHeight - feed.clientHeight;
+      const top = feed.scrollTop;
+      feed.classList.toggle("can-scroll-up", top > 2);
+      feed.classList.toggle("can-scroll-down", max > 2 && top < max - 2);
+    }
+
     let activeTab = "sms";
     let allItems = [];
     let searchQuery = "";
@@ -770,8 +809,23 @@
     let watching = false;
     const backBtn = document.getElementById("backBtn");
 
-    const trashIcon = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
-    const checkIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
+    const lucide = (inner) =>
+      `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${inner}</svg>`;
+
+    const ICONS = {
+      trash: lucide(`<path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/>`),
+      check: lucide(`<path d="M20 6 9 17l-5-5"/>`),
+      messageCircle: lucide(`<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>`),
+      send: lucide(`<path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z"/><path d="m21.854 2.147-10.94 10.939"/>`),
+      camera: lucide(`<path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/>`),
+      phone: lucide(`<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>`),
+      phoneIncoming: lucide(`<polyline points="16 2 16 8 22 8"/><line x1="22" x2="16" y1="2" y2="8"/><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>`),
+      phoneOutgoing: lucide(`<polyline points="22 8 22 2 16 2"/><line x1="16" x2="22" y1="8" y2="2"/><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>`),
+      phoneMissed: lucide(`<line x1="22" x2="16" y1="2" y2="8"/><line x1="16" x2="22" y1="2" y2="8"/><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>`),
+    };
+
+    const trashIcon = ICONS.trash;
+    const checkIcon = ICONS.check;
 
     function escapeHtml(value) {
       return String(value)
@@ -856,16 +910,16 @@
     }
 
     const socialIcons = {
-      WHATSAPP: `<svg viewBox="0 0 24 24"><path d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.37c1.45.78 3.08 1.2 4.74 1.2 5.46 0 9.91-4.45 9.91-9.91C21.95 6.46 17.5 2 12.04 2zm4.55 13.65c-.19.53-.93.98-1.51 1.1-.4.08-.92.14-2.67-.58-2.24-.93-3.68-3.19-3.79-3.34-.11-.15-.9-1.2-.9-2.28 0-1.08.55-1.61.77-1.84.19-.2.49-.29.76-.29h.24c.21.01.31.02.45.36.17.41.59 1.43.64 1.54.05.11.1.26.03.41-.07.15-.13.22-.24.35-.11.13-.21.22-.32.36-.12.13-.25.27-.1.52.15.25.66 1.09 1.42 1.76.98.87 1.78 1.15 2.06 1.27.22.09.45.07.61-.11.2-.23.46-.6.71-.95.18-.26.41-.22.66-.13.25.09 1.59.75 1.85.88.26.13.43.19.49.3.06.11.06.62-1.16.66z"/></svg>`,
-      TELEGRAM: `<svg viewBox="0 0 24 24"><path d="M9.78 15.73 9.6 18.9c.31 0 .45-.13.62-.29l1.49-1.43 3.09 2.27c.57.31 1.02.15 1.18-.52l2.14-10.08c.19-.86-.31-1.2-.88-.99L4.3 11.2c-.83.32-.82.78-.14.99l3.67 1.15 8.53-5.38c.4-.26.77-.12.47.16l-6.05 7.61z"/></svg>`,
-      INSTAGRAM: `<svg viewBox="0 0 24 24"><path d="M12 2.16c3.2 0 3.58.01 4.85.07 3.25.15 4.77 1.69 4.92 4.92.06 1.26.07 1.64.07 4.85s-.01 3.58-.07 4.85c-.15 3.22-1.66 4.77-4.92 4.92-1.26.06-1.64.07-4.85.07s-3.58-.01-4.85-.07c-3.26-.15-4.77-1.7-4.92-4.92C2.01 15.67 2 15.26 2 12s.01-3.58.07-4.85C2.22 3.9 3.74 2.38 7.15 2.23 8.41 2.17 8.8 2.16 12 2.16zm0-2.16C8.74 0 8.33.01 7.05.07 2.7.27.27 2.69.07 7.05.01 8.33 0 8.74 0 12c0 3.26.01 3.67.07 4.95.2 4.36 2.62 6.78 6.98 6.98C8.33 23.99 8.74 24 12 24c3.26 0 3.67-.01 4.95-.07 4.35-.2 6.78-2.62 6.98-6.98.06-1.28.07-1.69.07-4.95 0-3.26-.01-3.67-.07-4.95C23.73 2.7 21.31.27 16.95.07 15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.41-10.85a1.44 1.44 0 1 0 0 2.88 1.44 1.44 0 0 0 0-2.88z"/></svg>`,
+      WHATSAPP: ICONS.messageCircle,
+      TELEGRAM: ICONS.send,
+      INSTAGRAM: ICONS.camera,
     };
 
     const callIcons = {
-      incoming: `<svg viewBox="0 0 24 24"><path d="M20 5.41 18.59 4 7 15.59V9H5v10h10v-2H8.41L20 5.41z"/></svg>`,
-      outgoing: `<svg viewBox="0 0 24 24"><path d="M9 5v2h6.59L4 18.59 5.41 20 17 8.41V15h2V5H9z"/></svg>`,
-      missed: `<svg viewBox="0 0 24 24"><path d="M19.59 7 12 14.59 6.41 9H11V7H3v8h2v-4.59l7 7 9-9L19.59 7z"/></svg>`,
-      other: `<svg viewBox="0 0 24 24"><path d="M6.6 10.8c1.4 2.8 3.8 5.1 6.6 6.6l2.2-2.2c.3-.3.7-.4 1.1-.2 1.2.4 2.5.6 3.8.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1C10.6 21 3 13.4 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.6.6 3.8.1.4 0 .8-.3 1.1L6.6 10.8z"/></svg>`,
+      incoming: ICONS.phoneIncoming,
+      outgoing: ICONS.phoneOutgoing,
+      missed: ICONS.phoneMissed,
+      other: ICONS.phone,
     };
 
     function socialClass(type) {
@@ -925,6 +979,10 @@
       return [...best.values()];
     }
 
+    function isUnread(item) {
+      return Boolean(item) && item.read !== true;
+    }
+
     function buildConversations(items) {
       const map = new Map();
       for (const item of items) {
@@ -935,12 +993,14 @@
       return [...map.entries()]
         .map(([sender, messages]) => {
           const sorted = sortNewestFirst(messages);
+          const unread = sorted.filter(isUnread).length;
           return {
             sender,
             messages: sorted,
             latest: sorted[0],
             ids: sorted.map((m) => m.id),
             count: sorted.length,
+            unread,
           };
         })
         .sort((a, b) => eventTime(b.latest) - eventTime(a.latest));
@@ -951,6 +1011,7 @@
       const type = normalizeType(latest.messageType);
       const rtl = isRtl(latest.content) ? "rtl" : "";
       const selected = conv.ids.some((id) => selectedIds.has(id)) ? "selected" : "";
+      const unreadCls = conv.unread > 0 ? "unread" : "";
       const selectKey = conv.ids[0];
 
       let avatarHtml = "";
@@ -967,7 +1028,7 @@
       }
 
       const html = `
-        <article class="row ${selected}" data-conversation="${escapeHtml(conv.sender)}" data-id="${escapeHtml(selectKey)}" data-ids="${escapeHtml(conv.ids.join(","))}">
+        <article class="row ${selected} ${unreadCls}" data-conversation="${escapeHtml(conv.sender)}" data-id="${escapeHtml(selectKey)}" data-ids="${escapeHtml(conv.ids.join(","))}">
           ${checkHtml(selectKey)}
           ${avatarHtml}
           <div class="row-main" data-open="conversation">
@@ -976,7 +1037,7 @@
           </div>
           <div class="meta-col" data-open="conversation">
             <span class="when">${escapeHtml(formatWhen(eventTime(latest)))}</span>
-            ${conv.count > 1 ? `<span class="count-badge">${conv.count > 99 ? "99+" : conv.count}</span>` : ""}
+            ${conv.unread > 0 ? `<span class="count-badge">${conv.unread > 99 ? "99+" : conv.unread}</span>` : ""}
           </div>
         </article>`;
       return selecting ? html : wrapSwipe(html, selectKey);
@@ -1001,8 +1062,9 @@
       const icon = callIcons[parsed.kind] || callIcons.other;
       const preview = [parsed.direction, parsed.duration].filter(Boolean).join(" · ");
       const selected = selectedIds.has(item.id) ? "selected" : "";
+      const unreadCls = isUnread(item) ? "unread" : "";
       const html = `
-        <article class="row ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
+        <article class="row ${selected} ${unreadCls}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
           ${checkHtml(item.id)}
           <div class="avatar ${parsed.kind}" data-open="contact">${icon}</div>
           <div class="row-main" data-open="message">
@@ -1011,6 +1073,7 @@
           </div>
           <div class="meta-col" data-open="message">
             <span class="when">${escapeHtml(formatWhen(eventTime(item)))}</span>
+            ${isUnread(item) ? `<span class="count-badge">1</span>` : ""}
           </div>
         </article>`;
       return selecting ? html : wrapSwipe(html, item.id);
@@ -1027,12 +1090,13 @@
     }
 
     function updateCounts() {
-      const smsItems = allItems.filter((i) => TABS.sms.match(normalizeType(i.messageType)));
-      const socialItems = allItems.filter((i) => TABS.social.match(normalizeType(i.messageType)));
+      const smsItems = dedupeItems(allItems.filter((i) => TABS.sms.match(normalizeType(i.messageType))));
+      const socialItems = dedupeItems(allItems.filter((i) => TABS.social.match(normalizeType(i.messageType))));
+      const callItems = dedupeItems(allItems.filter((i) => TABS.calls.match(normalizeType(i.messageType))));
       const map = {
-        sms: buildConversations(smsItems).length,
-        social: buildConversations(socialItems).length,
-        calls: allItems.filter((i) => TABS.calls.match(normalizeType(i.messageType))).length,
+        sms: buildConversations(smsItems).reduce((n, c) => n + c.unread, 0),
+        social: buildConversations(socialItems).reduce((n, c) => n + c.unread, 0),
+        calls: callItems.filter(isUnread).length,
       };
       for (const [key, value] of Object.entries(map)) {
         const el = document.getElementById(`count-${key}`);
@@ -1041,15 +1105,67 @@
       }
     }
 
+    function softKeySiblings(ids) {
+      const seed = new Set((ids || []).map(String).filter(Boolean));
+      if (!seed.size) return [];
+      const keys = new Set(
+        allItems
+          .filter((item) => seed.has(String(item.id)))
+          .map((item) => softKey(item))
+      );
+      return allItems
+        .filter((item) => keys.has(softKey(item)))
+        .map((item) => String(item.id));
+    }
+
+    function unreadDuplicatesOfRead() {
+      const readKeys = new Set(
+        allItems.filter((item) => item.read === true).map((item) => softKey(item))
+      );
+      if (!readKeys.size) return [];
+      return allItems
+        .filter((item) => isUnread(item) && readKeys.has(softKey(item)))
+        .map((item) => String(item.id));
+    }
+
+    let markingRead = false;
+    async function markIdsRead(ids) {
+      const unique = [...new Set(softKeySiblings(ids))];
+      if (!unique.length || markingRead) return;
+      const pending = unique.filter((id) => {
+        const item = allItems.find((entry) => String(entry.id) === id);
+        return item && item.read !== true;
+      });
+      if (!pending.length) return;
+
+      markingRead = true;
+      for (const item of allItems) {
+        if (pending.includes(String(item.id))) item.read = true;
+      }
+      paint();
+      try {
+        await fetch("/api/sync/messages/read", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ids: pending }),
+        });
+      } catch (_) {
+        /* keep optimistic local read state */
+      } finally {
+        markingRead = false;
+      }
+    }
+
+    function healDuplicateUnread() {
+      const orphans = unreadDuplicatesOfRead();
+      if (!orphans.length) return;
+      markIdsRead(orphans);
+    }
+
     function updateSelectBar() {
       selectBar.classList.toggle("open", selecting);
       selectCount.textContent = `${selectedIds.size} selected`;
       app.classList.toggle("selecting", selecting);
-      document.getElementById("livePill").textContent = selecting
-        ? "Selection mode"
-        : openConversation
-          ? "Tap a message for details"
-          : "Live sync · hold to select";
     }
 
     function updateChrome() {
@@ -1077,10 +1193,13 @@
           items.filter((item) => conversationKey(item) === openConversation)
         ).reverse();
         if (thread.length) {
+          const unreadIds = thread.filter(isUnread).map((m) => m.id);
+          if (unreadIds.length) markIdsRead(unreadIds);
           feed.innerHTML = `<div class="chat-thread">${thread.map(renderThreadMessage).join("")}</div>`;
           bindSwipeHandlers();
           requestAnimationFrame(() => {
             feed.scrollTop = feed.scrollHeight;
+            updateFeedScrollEdges();
           });
           return;
         }
@@ -1092,6 +1211,7 @@
         feed.innerHTML = `<div class="empty">${escapeHtml(
           searchQuery.trim() ? "No results for this search" : TABS[activeTab].empty
         )}</div>`;
+        updateFeedScrollEdges();
         return;
       }
 
@@ -1103,6 +1223,7 @@
         feed.innerHTML = items.map(renderCall).join("");
       }
       bindSwipeHandlers();
+      requestAnimationFrame(updateFeedScrollEdges);
     }
 
     function closeConversation() {
@@ -1175,6 +1296,7 @@
         </div>`;
 
       showSheet();
+      if (isUnread(item)) markIdsRead([item.id]);
     }
 
     function openContactSheet(sender) {
@@ -1368,6 +1490,9 @@
     let pressMoved = false;
     let pressTarget = null;
 
+    feed.addEventListener("scroll", updateFeedScrollEdges, { passive: true });
+    window.addEventListener("resize", updateFeedScrollEdges);
+
     feed.addEventListener("pointerdown", (event) => {
       const itemEl = event.target.closest("[data-id]");
       if (!itemEl) return;
@@ -1441,6 +1566,7 @@
         allItems = sortNewestFirst(Array.isArray(data.items) ? data.items : []);
         if (typeof data.version === "number") currentVersion = data.version;
         paint();
+        healDuplicateUnread();
       } catch (_) {
         if (!feed.children.length) {
           feed.innerHTML = `<div class="empty">Could not reach the API</div>`;
@@ -1563,7 +1689,6 @@
       watching = false;
       watchAbort?.abort();
     });
-
     loadMessages().then(watchForUpdates);
   </script>
 </body>

@@ -14,6 +14,11 @@ export class MessageStore {
     this.messages = [];
     this.version = 0;
     this._fingerprints = new Set();
+    this._readIds = new Set();
+  }
+
+  #withRead(item) {
+    return { ...item, read: this._readIds.has(String(item.id)) };
   }
 
   async getVersion() {
@@ -54,12 +59,27 @@ export class MessageStore {
       items = items.filter((m) => m.messageType === messageType);
     }
 
-    if (limit == null || limit <= 0) return items;
-    return items.slice(0, limit);
+    if (limit != null && limit > 0) items = items.slice(0, limit);
+    return items.map((item) => this.#withRead(item));
   }
 
   async getById(id) {
-    return this.messages.find((m) => m.id === id) ?? null;
+    const item = this.messages.find((m) => m.id === id) ?? null;
+    return item ? this.#withRead(item) : null;
+  }
+
+  async markRead(ids = []) {
+    const idSet = new Set((ids || []).map(String).filter(Boolean));
+    if (!idSet.size) return 0;
+    let marked = 0;
+    for (const id of idSet) {
+      if (!this.messages.some((m) => String(m.id) === id)) continue;
+      if (!this._readIds.has(id)) {
+        this._readIds.add(id);
+        marked += 1;
+      }
+    }
+    return marked;
   }
 
   async removeByIds(ids = []) {
@@ -69,6 +89,7 @@ export class MessageStore {
     this.messages = this.messages.filter((m) => !idSet.has(String(m.id)));
     const removed = before - this.messages.length;
     if (removed > 0) {
+      for (const id of idSet) this._readIds.delete(id);
       this._fingerprints = new Set(this.messages.map((m) => messageFingerprint(m)));
       this.#bump();
     }
@@ -88,6 +109,7 @@ export class MessageStore {
     const removed = this.messages.length;
     this.messages = [];
     this._fingerprints = new Set();
+    this._readIds = new Set();
     this.#bump();
     return removed;
   }

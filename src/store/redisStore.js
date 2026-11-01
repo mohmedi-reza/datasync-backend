@@ -7,6 +7,7 @@ const LEGACY_KEY = "datasync:messages";
 const LIST_KEY = "datasync:messages:list";
 const VERSION_KEY = "datasync:version";
 const FP_KEY = "datasync:fingerprints";
+const READ_KEY = "datasync:read-ids";
 
 /**
  * Durable store via Upstash Redis.
@@ -75,6 +76,15 @@ export class RedisStore {
     }).filter(Boolean);
 
     return sortNewestFirst(normalized);
+  }
+
+  async #readIdSet() {
+    const ids = await this.redis.smembers(READ_KEY);
+    return new Set((ids || []).map(String));
+  }
+
+  #withRead(item, readIds) {
+    return { ...item, read: readIds.has(String(item.id)) };
   }
 
   async #writeList(key, messages) {
@@ -163,18 +173,38 @@ export class RedisStore {
 
   async list({ limit, messageType } = {}) {
     let items = await this.#readAll();
+    const readIds = await this.#readIdSet();
 
     if (messageType) {
       items = items.filter((m) => m.messageType === messageType);
     }
 
-    if (limit == null || limit <= 0) return items;
-    return items.slice(0, limit);
+    if (limit != null && limit > 0) items = items.slice(0, limit);
+    return items.map((item) => this.#withRead(item, readIds));
   }
 
   async getById(id) {
     const messages = await this.#readAll();
-    return messages.find((m) => m.id === id) ?? null;
+    const item = messages.find((m) => m.id === id) ?? null;
+    if (!item) return null;
+    const readIds = await this.#readIdSet();
+    return this.#withRead(item, readIds);
+  }
+
+  async markRead(ids = []) {
+    const idSet = [...new Set((ids || []).map(String).filter(Boolean))];
+    if (!idSet.length) return 0;
+
+    const messages = await this.#readAll();
+    const existing = new Set(messages.map((m) => String(m.id)));
+    const toMark = idSet.filter((id) => existing.has(id));
+    if (!toMark.length) return 0;
+
+    const chunkSize = 100;
+    for (let i = 0; i < toMark.length; i += chunkSize) {
+      await this.redis.sadd(READ_KEY, ...toMark.slice(i, i + chunkSize));
+    }
+    return toMark.length;
   }
 
   async removeByIds(ids = []) {
@@ -187,6 +217,11 @@ export class RedisStore {
     if (!removed) return 0;
 
     await this.#replaceList(kept);
+    const gone = [...idSet];
+    const chunkSize = 100;
+    for (let i = 0; i < gone.length; i += chunkSize) {
+      await this.redis.srem(READ_KEY, ...gone.slice(i, i + chunkSize));
+    }
     await this.#bump();
     return removed;
   }
@@ -211,6 +246,7 @@ export class RedisStore {
     await this.redis.del(LIST_KEY);
     await this.redis.del(LEGACY_KEY);
     await this.redis.del(FP_KEY);
+    await this.redis.del(READ_KEY);
     await this.redis.del(`${LIST_KEY}:tmp`);
     await this.#bump();
     return removed || 0;

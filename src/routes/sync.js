@@ -117,6 +117,18 @@ export function createSyncRouter(store) {
     return res.json({ ok: true, removed, version: await store.getVersion() });
   });
 
+  router.post("/messages/read", async (req, res) => {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(String) : [];
+    if (!ids.length) {
+      return res.status(400).json({ ok: false, error: "ids required" });
+    }
+    if (typeof store.markRead !== "function") {
+      return res.status(501).json({ ok: false, error: "Mark read not supported" });
+    }
+    const marked = await store.markRead(ids);
+    return res.json({ ok: true, marked });
+  });
+
   /** Tiny endpoint — used by dashboard change detection. */
   router.get("/version", async (_req, res) => {
     return res.json({ ok: true, version: await store.getVersion() });
