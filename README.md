@@ -4,10 +4,15 @@ HTTP API for the **DataSync** Android app. Receives POST payloads from `SyncApiS
 
 Designed for a free [Render](https://render.com) **Web Service**.
 
+## Live dashboard
+
+Open the root URL (`/`) for a minimal live inbox of payloads received from the Android app. It auto-refreshes every 2 seconds.
+
 ## Endpoints
 
 | Method | Path | Auth | Description |
 |--------|------|------|-------------|
+| `GET` | `/` | no | Live inbox UI |
 | `GET` | `/health` | no | Health check |
 | `POST` | `/api/sync` | optional | Accept Android payload |
 | `GET` | `/api/sync/messages` | optional | List recent messages |

@@ -1,0 +1,386 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DataSync</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --ink: #14201b;
+      --muted: #5f6f68;
+      --line: rgba(20, 32, 27, 0.1);
+      --panel: rgba(255, 252, 247, 0.72);
+      --accent: #1f6f5b;
+      --accent-soft: rgba(31, 111, 91, 0.12);
+      --danger: #9b3b2e;
+      --bg0: #e8efe9;
+      --bg1: #f7f3ec;
+      --bg2: #d9e7e1;
+      --shadow: 0 24px 60px rgba(20, 32, 27, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+    }
+
+    body {
+      font-family: "Outfit", system-ui, sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(1200px 700px at 12% -10%, var(--bg2), transparent 55%),
+        radial-gradient(900px 600px at 100% 0%, #f0e6d8, transparent 50%),
+        linear-gradient(165deg, var(--bg0), var(--bg1) 45%, #efe8dc);
+      background-attachment: fixed;
+    }
+
+    .shell {
+      width: min(760px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 48px 0 72px;
+    }
+
+    header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 36px;
+      animation: rise 0.7s ease both;
+    }
+
+    .brand {
+      font-family: "Instrument Serif", Georgia, serif;
+      font-size: clamp(2.4rem, 6vw, 3.4rem);
+      font-weight: 400;
+      letter-spacing: -0.03em;
+      line-height: 0.95;
+      margin: 0;
+    }
+
+    .brand span {
+      display: block;
+      font-family: "Outfit", sans-serif;
+      font-size: 0.78rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .live {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.85rem;
+      font-weight: 500;
+      padding-bottom: 6px;
+    }
+
+    .live i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 0 0 rgba(31, 111, 91, 0.45);
+      animation: pulse 1.8s ease infinite;
+    }
+
+    .summary {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 18px;
+      animation: rise 0.7s ease 0.08s both;
+    }
+
+    .summary h2 {
+      margin: 0;
+      font-size: 1rem;
+      font-weight: 500;
+      color: var(--muted);
+    }
+
+    .summary strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    button {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--muted);
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 8px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+    }
+
+    button:hover {
+      color: var(--ink);
+      border-color: rgba(20, 32, 27, 0.22);
+      background: rgba(255, 255, 255, 0.45);
+    }
+
+    button.danger:hover {
+      color: var(--danger);
+      border-color: rgba(155, 59, 46, 0.35);
+      background: rgba(155, 59, 46, 0.06);
+    }
+
+    .feed {
+      background: var(--panel);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      animation: rise 0.7s ease 0.14s both;
+    }
+
+    .empty {
+      padding: 64px 28px;
+      text-align: center;
+    }
+
+    .empty p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.98rem;
+      line-height: 1.6;
+    }
+
+    .empty code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.78rem;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 3px 8px;
+      border-radius: 8px;
+    }
+
+    .item {
+      padding: 20px 24px;
+      border-top: 1px solid var(--line);
+      animation: fadeIn 0.35s ease both;
+    }
+
+    .item:first-child { border-top: 0; }
+
+    .item-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .type {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-soft);
+      padding: 5px 10px;
+      border-radius: 999px;
+    }
+
+    .time {
+      font-size: 0.78rem;
+      color: var(--muted);
+      white-space: nowrap;
+    }
+
+    .sender {
+      margin: 0 0 6px;
+      font-size: 0.95rem;
+      font-weight: 600;
+    }
+
+    .content {
+      margin: 0;
+      color: var(--ink);
+      font-size: 1.02rem;
+      line-height: 1.55;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .meta {
+      margin-top: 12px;
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    footer {
+      margin-top: 22px;
+      color: var(--muted);
+      font-size: 0.78rem;
+      animation: rise 0.7s ease 0.2s both;
+    }
+
+    @keyframes pulse {
+      0% { box-shadow: 0 0 0 0 rgba(31, 111, 91, 0.45); }
+      70% { box-shadow: 0 0 0 10px rgba(31, 111, 91, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(31, 111, 91, 0); }
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 560px) {
+      .shell { width: min(100% - 24px, 760px); padding-top: 28px; }
+      header { flex-direction: column; align-items: flex-start; }
+      .summary { flex-direction: column; align-items: flex-start; }
+      .item { padding: 18px 18px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <header>
+      <h1 class="brand">
+        <span>Live inbox</span>
+        DataSync
+      </h1>
+      <div class="live" title="Auto-refreshing every 2s">
+        <i></i>
+        Listening
+      </div>
+    </header>
+
+    <div class="summary">
+      <h2><strong id="count">0</strong> payloads received</h2>
+      <div class="actions">
+        <button type="button" id="refreshBtn">Refresh</button>
+        <button type="button" class="danger" id="clearBtn">Clear</button>
+      </div>
+    </div>
+
+    <section class="feed" id="feed" aria-live="polite"></section>
+
+    <footer>
+      POST endpoint: <span id="endpoint"></span>
+    </footer>
+  </div>
+
+  <script>
+    const feed = document.getElementById("feed");
+    const countEl = document.getElementById("count");
+    const endpointEl = document.getElementById("endpoint");
+    endpointEl.textContent = location.origin + "/api/sync";
+
+    let knownIds = new Set();
+    let firstLoad = true;
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
+    }
+
+    function formatTime(ms) {
+      if (!ms) return "—";
+      const d = new Date(ms);
+      return d.toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    }
+
+    function renderEmpty() {
+      feed.innerHTML = `
+        <div class="empty">
+          <p>Waiting for the first payload from the Android app.<br />
+          Send to <code>/api/sync</code></p>
+        </div>`;
+    }
+
+    function renderItems(items) {
+      if (!items.length) {
+        renderEmpty();
+        knownIds = new Set();
+        return;
+      }
+
+      const nextIds = new Set(items.map((item) => item.id));
+      feed.innerHTML = items.map((item, index) => {
+        const isNew = !firstLoad && !knownIds.has(item.id);
+        return `
+          <article class="item" style="${isNew ? "" : `animation-delay:${Math.min(index, 8) * 20}ms`}">
+            <div class="item-top">
+              <span class="type">${escapeHtml(item.messageType)}</span>
+              <time class="time">${escapeHtml(formatTime(item.receivedAt || item.timestamp))}</time>
+            </div>
+            <p class="sender">${escapeHtml(item.sender)}</p>
+            <p class="content">${escapeHtml(item.content)}</p>
+            <div class="meta">${escapeHtml(item.id)}</div>
+          </article>`;
+      }).join("");
+      knownIds = nextIds;
+      firstLoad = false;
+    }
+
+    async function loadMessages() {
+      try {
+        const res = await fetch("/api/sync/messages?limit=100", { cache: "no-store" });
+        if (!res.ok) throw new Error("Failed to load");
+        const data = await res.json();
+        const items = Array.isArray(data.items) ? data.items : [];
+        countEl.textContent = String(data.count ?? items.length);
+        renderItems(items);
+      } catch (err) {
+        if (!feed.children.length) {
+          feed.innerHTML = `<div class="empty"><p>Could not reach the API.</p></div>`;
+        }
+      }
+    }
+
+    document.getElementById("refreshBtn").addEventListener("click", loadMessages);
+    document.getElementById("clearBtn").addEventListener("click", async () => {
+      if (!confirm("Clear all received payloads?")) return;
+      await fetch("/api/sync/messages", { method: "DELETE" });
+      firstLoad = true;
+      await loadMessages();
+    });
+
+    renderEmpty();
+    loadMessages();
+    setInterval(loadMessages, 2000);
+  </script>
+</body>
+</html>
