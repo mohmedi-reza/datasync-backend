@@ -892,6 +892,24 @@
       return String(item.sender || "Unknown").trim() || "Unknown";
     }
 
+    function softKey(item) {
+      return [
+        normalizeType(item.messageType),
+        String(item.sender || "").trim(),
+        String(item.content || "").trim(),
+      ].join("|");
+    }
+
+    function dedupeItems(items) {
+      const best = new Map();
+      for (const item of items) {
+        const key = softKey(item);
+        const prev = best.get(key);
+        if (!prev || eventTime(item) >= eventTime(prev)) best.set(key, item);
+      }
+      return [...best.values()];
+    }
+
     function buildConversations(items) {
       const map = new Map();
       for (const item of items) {
@@ -985,8 +1003,10 @@
 
     function filteredItems() {
       return sortNewestFirst(
-        allItems.filter((item) =>
-          TABS[activeTab].match(normalizeType(item.messageType)) && matchesSearch(item)
+        dedupeItems(
+          allItems.filter((item) =>
+            TABS[activeTab].match(normalizeType(item.messageType)) && matchesSearch(item)
+          )
         )
       );
     }
