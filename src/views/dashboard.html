@@ -25,7 +25,6 @@
     }
 
     * { box-sizing: border-box; }
-
     html, body {
       margin: 0;
       min-height: 100%;
@@ -59,7 +58,6 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 4px;
     }
 
     .title {
@@ -67,14 +65,9 @@
       font-size: 1.85rem;
       font-weight: 700;
       letter-spacing: -0.04em;
-      color: var(--ink);
     }
 
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-    }
+    .header-actions { display: flex; align-items: center; gap: 4px; }
 
     .icon-btn {
       width: 40px;
@@ -87,26 +80,19 @@
       place-items: center;
       cursor: pointer;
     }
-
-    .icon-btn:hover,
-    .icon-btn.active { background: var(--line); color: var(--ink); }
-
-    .icon-btn svg {
-      width: 20px;
-      height: 20px;
-      fill: currentColor;
-    }
+    .icon-btn:hover, .icon-btn.active { background: var(--line); color: var(--ink); }
+    .icon-btn.danger { color: var(--red); }
+    .icon-btn svg { width: 20px; height: 20px; fill: currentColor; }
 
     .live-pill {
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-top: 4px;
+      margin-top: 6px;
       font-size: 0.78rem;
       font-weight: 500;
       color: var(--muted);
     }
-
     .live-pill i {
       width: 7px;
       height: 7px;
@@ -115,14 +101,8 @@
       animation: pulse 1.8s ease infinite;
     }
 
-    .search-box {
-      display: none;
-      margin-top: 12px;
-      position: relative;
-    }
-
+    .search-box { display: none; margin-top: 12px; position: relative; }
     .search-box.open { display: block; }
-
     .search-box input {
       width: 100%;
       border: 0;
@@ -134,22 +114,15 @@
       font-size: 0.92rem;
       color: var(--ink);
     }
-
-    .search-box input::placeholder { color: var(--muted); }
-
-    .search-box .search-ico,
-    .search-box .clear-ico {
+    .search-box .search-ico {
       position: absolute;
+      left: 14px;
       top: 50%;
       transform: translateY(-50%);
       width: 18px;
       height: 18px;
       fill: var(--muted);
-      pointer-events: none;
     }
-
-    .search-box .search-ico { left: 14px; }
-
     .search-box .clear-ico-btn {
       position: absolute;
       right: 8px;
@@ -165,14 +138,28 @@
       place-items: center;
       cursor: pointer;
     }
-
     .search-box .clear-ico-btn.show { display: grid; }
     .search-box .clear-ico-btn svg { width: 16px; height: 16px; fill: currentColor; }
+
+    .select-bar {
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: var(--blue-soft);
+    }
+    .select-bar.open { display: flex; }
+    .select-bar strong { font-size: 0.9rem; }
+    .select-bar .actions { display: flex; gap: 6px; }
 
     .feed {
       flex: 1;
       overflow: auto;
       padding: 4px 8px 110px;
+      overscroll-behavior: contain;
     }
 
     .empty {
@@ -183,10 +170,32 @@
       line-height: 1.6;
     }
 
-    .row,
-    .msg-block {
-      cursor: pointer;
-      -webkit-tap-highlight-color: transparent;
+    .swipe {
+      position: relative;
+      overflow: hidden;
+      border-radius: 18px;
+      margin-bottom: 2px;
+      touch-action: pan-y;
+    }
+
+    .swipe-actions {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 76px;
+      background: var(--red);
+      display: grid;
+      place-items: center;
+      color: #fff;
+      z-index: 0;
+    }
+    .swipe-actions svg { width: 22px; height: 22px; fill: currentColor; }
+
+    .swipe-front {
+      position: relative;
+      z-index: 1;
+      background: var(--surface);
+      transition: transform 0.18s ease;
+      will-change: transform;
     }
 
     .row {
@@ -196,11 +205,31 @@
       align-items: center;
       padding: 12px;
       border-radius: 18px;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
       animation: fadeIn 0.28s ease both;
     }
+    .selecting .row { grid-template-columns: 28px 56px 1fr auto; }
+    .row:hover, .row:active { background: #f8f9fd; }
+    .row.selected { background: var(--blue-soft); }
 
-    .row:hover,
-    .row:active { background: #f8f9fd; }
+    .check {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid #c9d2e3;
+      display: none;
+      place-items: center;
+      flex-shrink: 0;
+    }
+    .selecting .check { display: grid; }
+    .row.selected .check {
+      background: var(--blue);
+      border-color: var(--blue);
+      color: #fff;
+    }
+    .row.selected .check svg { width: 12px; height: 12px; fill: currentColor; }
 
     .avatar {
       width: 52px;
@@ -215,20 +244,15 @@
       flex-shrink: 0;
       background: #94a3b8;
     }
-
     .avatar.sms { background: linear-gradient(135deg, #60a5fa, #3b6ff5); }
     .avatar.wa { background: var(--wa); }
     .avatar.tg { background: var(--tg); }
-    .avatar.ig {
-      background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%);
-    }
+    .avatar.ig { background: radial-gradient(circle at 30% 110%, #fdf497 0%, #fd5949 45%, #d6249f 60%, #285aeb 90%); }
     .avatar.incoming { background: #dcfce7; color: #15803d; }
     .avatar.outgoing { background: var(--blue-soft); color: var(--blue); }
     .avatar.missed { background: #fee2e2; color: var(--red); }
     .avatar.other { background: #e2e8f0; color: #475569; }
-
     .avatar svg { width: 24px; height: 24px; fill: currentColor; }
-
     .avatar .badge-app {
       position: absolute;
       right: -2px;
@@ -239,42 +263,23 @@
       border: 2px solid #fff;
       display: grid;
       place-items: center;
-      background: var(--blue);
     }
-
     .avatar .badge-app.wa { background: var(--wa); }
     .avatar .badge-app.tg { background: var(--tg); }
     .avatar .badge-app.ig { background: var(--ig); }
     .avatar .badge-app svg { width: 11px; height: 11px; fill: #fff; }
 
     .row-main { min-width: 0; }
-
-    .row-top {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 10px;
-      margin-bottom: 4px;
-    }
-
+    .row-top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-bottom: 4px; }
     .name {
       margin: 0;
       font-size: 0.98rem;
       font-weight: 700;
-      color: var(--ink);
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    .when {
-      font-size: 0.75rem;
-      font-weight: 500;
-      color: var(--muted);
-      white-space: nowrap;
-      flex-shrink: 0;
-    }
-
+    .when { font-size: 0.75rem; font-weight: 500; color: var(--muted); white-space: nowrap; }
     .preview {
       margin: 0;
       font-size: 0.86rem;
@@ -287,18 +292,8 @@
       overflow: hidden;
       font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
     }
-
     .preview.rtl { direction: rtl; text-align: right; }
-
-    .meta-col {
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 8px;
-      align-self: start;
-      padding-top: 2px;
-    }
-
+    .meta-col { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; align-self: start; padding-top: 2px; }
     .count-badge {
       min-width: 22px;
       height: 22px;
@@ -312,46 +307,26 @@
       place-items: center;
     }
 
-    .bubble-wrap {
-      padding: 8px 14px 18px;
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
-
+    .bubble-wrap { padding: 8px 14px 18px; display: flex; flex-direction: column; gap: 10px; }
     .msg-block {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: 6px;
       max-width: 92%;
+      cursor: pointer;
+      user-select: none;
       animation: fadeIn 0.28s ease both;
     }
-
-    .msg-meta {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding-inline: 4px;
-    }
-
-    .msg-meta .who {
-      font-size: 0.78rem;
-      font-weight: 700;
-      color: var(--ink);
-    }
-
-    .msg-meta .at {
-      font-size: 0.72rem;
-      color: var(--muted);
-    }
-
+    .msg-block.selected .bubble { outline: 2px solid var(--blue); }
+    .msg-meta { display: flex; align-items: center; gap: 8px; padding-inline: 4px; }
+    .msg-meta .who { font-size: 0.78rem; font-weight: 700; }
+    .msg-meta .at { font-size: 0.72rem; color: var(--muted); }
     .bubble {
       margin: 0;
       padding: 12px 14px;
       border-radius: 4px 18px 18px 18px;
       background: #f1f4f9;
-      color: var(--ink);
       font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
       font-size: 0.92rem;
       font-weight: 500;
@@ -363,27 +338,20 @@
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-
-    .bubble.rtl {
-      direction: rtl;
-      text-align: right;
-      border-radius: 18px 4px 18px 18px;
-    }
+    .bubble.rtl { direction: rtl; text-align: right; border-radius: 18px 4px 18px 18px; }
 
     .bottom-nav {
       position: sticky;
       bottom: 0;
       margin-top: auto;
-      background: rgba(255, 255, 255, 0.96);
+      background: rgba(255,255,255,0.96);
       backdrop-filter: blur(12px);
       border-top: 1px solid var(--line);
       padding: 10px 18px calc(12px + env(safe-area-inset-bottom));
       display: grid;
       grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
       z-index: 5;
     }
-
     .nav-item {
       appearance: none;
       border: 0;
@@ -400,9 +368,7 @@
       cursor: pointer;
       position: relative;
     }
-
     .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
-
     .nav-item .dot-count {
       position: absolute;
       top: 0;
@@ -418,7 +384,6 @@
       display: none;
       place-items: center;
     }
-
     .nav-item .dot-count.show { display: grid; }
     .nav-item.active { color: var(--ink); }
     .nav-item.active::after {
@@ -430,7 +395,6 @@
       margin-top: 2px;
     }
 
-    /* Bottom sheet */
     .sheet-backdrop {
       position: absolute;
       inset: 0;
@@ -440,12 +404,7 @@
       transition: opacity 0.22s ease;
       z-index: 20;
     }
-
-    .sheet-backdrop.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
+    .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
     .sheet {
       position: absolute;
       left: 0;
@@ -462,18 +421,14 @@
       flex-direction: column;
       padding-bottom: env(safe-area-inset-bottom);
     }
-
     .sheet.open { transform: translateY(0); }
-
     .sheet-handle {
       width: 42px;
       height: 4px;
       border-radius: 999px;
       background: #d7dce8;
       margin: 10px auto 6px;
-      flex-shrink: 0;
     }
-
     .sheet-head {
       display: flex;
       align-items: center;
@@ -481,11 +436,8 @@
       padding: 8px 18px 14px;
       border-bottom: 1px solid var(--line);
     }
-
     .sheet-head .avatar { width: 46px; height: 46px; font-size: 0.85rem; }
-
     .sheet-head-text { min-width: 0; flex: 1; }
-
     .sheet-head-text h2 {
       margin: 0;
       font-size: 1.05rem;
@@ -494,14 +446,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
     }
-
-    .sheet-head-text p {
-      margin: 3px 0 0;
-      font-size: 0.78rem;
-      color: var(--muted);
-      font-weight: 500;
-    }
-
+    .sheet-head-text p { margin: 3px 0 0; font-size: 0.78rem; color: var(--muted); font-weight: 500; }
     .sheet-close {
       width: 36px;
       height: 36px;
@@ -512,16 +457,9 @@
       display: grid;
       place-items: center;
       cursor: pointer;
-      flex-shrink: 0;
     }
-
     .sheet-close svg { width: 18px; height: 18px; fill: currentColor; }
-
-    .sheet-body {
-      padding: 16px 18px 22px;
-      overflow: auto;
-    }
-
+    .sheet-body { padding: 16px 18px 22px; overflow: auto; }
     .sheet-label {
       margin: 0 0 6px;
       font-size: 0.7rem;
@@ -530,7 +468,6 @@
       text-transform: uppercase;
       color: var(--muted);
     }
-
     .sheet-content {
       margin: 0 0 18px;
       padding: 14px 16px;
@@ -542,24 +479,15 @@
       line-height: 1.65;
       white-space: pre-wrap;
       word-break: break-word;
-      color: var(--ink);
     }
-
     .sheet-content.rtl { direction: rtl; text-align: right; }
-
-    .sheet-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
+    .sheet-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
     .sheet-chip {
       padding: 12px 14px;
       border-radius: 14px;
       background: #f8f9fd;
       border: 1px solid var(--line);
     }
-
     .sheet-chip span {
       display: block;
       font-size: 0.68rem;
@@ -569,12 +497,20 @@
       color: var(--muted);
       margin-bottom: 4px;
     }
-
-    .sheet-chip strong {
+    .sheet-chip strong { font-size: 0.86rem; font-weight: 600; word-break: break-word; }
+    .sheet-list { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .sheet-list-item {
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #f5f7fb;
       font-size: 0.86rem;
-      font-weight: 600;
-      color: var(--ink);
-      word-break: break-word;
+      color: var(--muted);
+      line-height: 1.45;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
     }
 
     @keyframes pulse {
@@ -582,7 +518,6 @@
       70% { box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
       100% { box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
     }
-
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
@@ -590,7 +525,7 @@
   </style>
 </head>
 <body>
-  <div class="phone">
+  <div class="phone" id="app">
     <header class="app-header">
       <div class="header-row">
         <h1 class="title" id="pageTitle">Messages</h1>
@@ -601,24 +536,37 @@
           <button type="button" class="icon-btn" id="refreshBtn" title="Refresh">
             <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 0 1-8.9 3.1L6.7 16.5A7.97 7.97 0 0 0 20 12c0-2.21-.9-4.21-2.35-5.65zM6 12c0-1.48.65-2.8 1.69-3.71L6.35 6.94A7.97 7.97 0 0 0 4 12c0 3.87 2.75 7.1 6.37 7.85l.63-1.98A6.001 6.001 0 0 1 6 12z"/></svg>
           </button>
-          <button type="button" class="icon-btn" id="clearBtn" title="Clear">
+          <button type="button" class="icon-btn" id="clearBtn" title="Clear all">
             <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
           </button>
         </div>
       </div>
-      <div class="live-pill"><i></i> Live sync</div>
+      <div class="live-pill" id="livePill"><i></i> Live sync · hold to select</div>
+
       <div class="search-box" id="searchBox">
         <svg class="search-ico" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
         <input id="searchInput" type="search" placeholder="Search messages..." autocomplete="off" />
-        <button type="button" class="clear-ico-btn" id="searchClear" title="Clear search">
+        <button type="button" class="clear-ico-btn" id="searchClear">
           <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
+      </div>
+
+      <div class="select-bar" id="selectBar">
+        <strong id="selectCount">0 selected</strong>
+        <div class="actions">
+          <button type="button" class="icon-btn" id="selectCancel" title="Cancel">
+            <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+          </button>
+          <button type="button" class="icon-btn danger" id="selectDelete" title="Delete selected">
+            <svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>
+          </button>
+        </div>
       </div>
     </header>
 
     <section class="feed" id="feed" aria-live="polite"></section>
 
-    <nav class="bottom-nav" aria-label="Channels">
+    <nav class="bottom-nav">
       <button type="button" class="nav-item active" data-tab="sms">
         <span class="dot-count" id="count-sms">0</span>
         <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H5.17L4 17.17V4h16v12z"/></svg>
@@ -645,56 +593,53 @@
           <h2 id="sheetTitle">—</h2>
           <p id="sheetSubtitle">—</p>
         </div>
-        <button type="button" class="sheet-close" id="sheetClose" aria-label="Close">
+        <button type="button" class="sheet-close" id="sheetClose">
           <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
         </button>
       </div>
-      <div class="sheet-body">
-        <p class="sheet-label">Content</p>
-        <div class="sheet-content" id="sheetContent"></div>
-        <div class="sheet-grid">
-          <div class="sheet-chip"><span>Type</span><strong id="sheetType">—</strong></div>
-          <div class="sheet-chip"><span>Time</span><strong id="sheetTime">—</strong></div>
-          <div class="sheet-chip" style="grid-column: 1 / -1"><span>Sender</span><strong id="sheetSender">—</strong></div>
-        </div>
-      </div>
+      <div class="sheet-body" id="sheetBody"></div>
     </aside>
   </div>
 
   <script>
     const TABS = {
-      sms: {
-        title: "Messages",
-        empty: "No SMS yet",
-        match: (type) => type === "SMS",
-      },
+      sms: { title: "Messages", empty: "No SMS yet", match: (t) => t === "SMS" },
       social: {
         title: "Social",
         empty: "No social notifications yet",
-        match: (type) => ["WHATSAPP", "TELEGRAM", "INSTAGRAM", "SOCIAL", "NOTIFICATION"].includes(type),
+        match: (t) => ["WHATSAPP", "TELEGRAM", "INSTAGRAM", "SOCIAL", "NOTIFICATION"].includes(t),
       },
       calls: {
         title: "Calls",
         empty: "No calls yet",
-        match: (type) => ["CALL", "CALL_LOG", "CALLS"].includes(type),
+        match: (t) => ["CALL", "CALL_LOG", "CALLS"].includes(t),
       },
     };
 
+    const app = document.getElementById("app");
     const feed = document.getElementById("feed");
     const pageTitle = document.getElementById("pageTitle");
     const searchBox = document.getElementById("searchBox");
     const searchInput = document.getElementById("searchInput");
     const searchToggle = document.getElementById("searchToggle");
     const searchClear = document.getElementById("searchClear");
+    const selectBar = document.getElementById("selectBar");
+    const selectCount = document.getElementById("selectCount");
     const sheet = document.getElementById("sheet");
     const sheetBackdrop = document.getElementById("sheetBackdrop");
+    const sheetBody = document.getElementById("sheetBody");
 
     let activeTab = "sms";
     let allItems = [];
     let searchQuery = "";
+    let selecting = false;
+    let selectedIds = new Set();
     let currentVersion = 0;
     let watchAbort = null;
     let watching = false;
+
+    const trashIcon = `<svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg>`;
+    const checkIcon = `<svg viewBox="0 0 24 24"><path d="M9 16.17 4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>`;
 
     function escapeHtml(value) {
       return String(value)
@@ -759,19 +704,15 @@
         const aTime = Number(a?.timestamp ?? a?.receivedAt ?? 0);
         const bTime = Number(b?.timestamp ?? b?.receivedAt ?? 0);
         if (bTime !== aTime) return bTime - aTime;
-        const aRecv = Number(a?.receivedAt ?? 0);
-        const bRecv = Number(b?.receivedAt ?? 0);
-        if (bRecv !== aRecv) return bRecv - aRecv;
-        return String(b?.id ?? "").localeCompare(String(a?.id ?? ""));
+        return Number(b?.receivedAt ?? 0) - Number(a?.receivedAt ?? 0);
       });
     }
 
     function parseCall(item) {
-      const content = String(item.content || "");
-      const parts = content.split("·").map((p) => p.trim()).filter(Boolean);
+      const parts = String(item.content || "").split("·").map((p) => p.trim()).filter(Boolean);
       const direction = parts[0] || "Call";
       const number = parts[1] || item.sender || "";
-      let duration = (parts[2] || "").replace(/^duration\s*=\s*/i, "").trim();
+      const duration = (parts[2] || "").replace(/^duration\s*=\s*/i, "").trim();
       const kind = /missed/i.test(direction)
         ? "missed"
         : /outgoing/i.test(direction)
@@ -814,19 +755,35 @@
       if (!q) return true;
       return [item.sender, item.content, item.messageType]
         .filter(Boolean)
-        .some((value) => String(value).toLowerCase().includes(q));
+        .some((v) => String(v).toLowerCase().includes(q));
+    }
+
+    function wrapSwipe(innerHtml, id) {
+      return `
+        <div class="swipe" data-swipe-id="${escapeHtml(id)}">
+          <div class="swipe-actions" data-action="swipe-delete" data-id="${escapeHtml(id)}">${trashIcon}</div>
+          <div class="swipe-front">${innerHtml}</div>
+        </div>`;
+    }
+
+    function checkHtml(id) {
+      const on = selectedIds.has(id);
+      return `<div class="check">${on ? checkIcon : ""}</div>`;
     }
 
     function renderSms(item) {
       const rtl = isRtl(item.content) ? "rtl" : "";
-      return `
-        <article class="msg-block" data-id="${escapeHtml(item.id)}">
+      const selected = selectedIds.has(item.id) ? "selected" : "";
+      const html = `
+        <article class="msg-block ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
           <div class="msg-meta">
-            <span class="who">${escapeHtml(item.sender)}</span>
+            ${selecting ? checkHtml(item.id) : ""}
+            <span class="who" data-open="contact">${escapeHtml(item.sender)}</span>
             <span class="at">${escapeHtml(formatClock(eventTime(item)))}</span>
           </div>
-          <p class="bubble ${rtl}">${escapeHtml(item.content)}</p>
+          <p class="bubble ${rtl}" data-open="message">${escapeHtml(item.content)}</p>
         </article>`;
+      return selecting ? html : wrapSwipe(html, item.id);
     }
 
     function renderSocial(item) {
@@ -834,42 +791,44 @@
       const cls = socialClass(type);
       const rtl = isRtl(item.content) ? "rtl" : "";
       const icon = socialIcons[type] || socialIcons.TELEGRAM;
-      return `
-        <article class="row" data-id="${escapeHtml(item.id)}">
-          <div class="avatar ${cls}">
+      const selected = selectedIds.has(item.id) ? "selected" : "";
+      const html = `
+        <article class="row ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
+          ${checkHtml(item.id)}
+          <div class="avatar ${cls}" data-open="contact">
             ${escapeHtml(initials(item.sender))}
             <span class="badge-app ${cls}">${icon}</span>
           </div>
-          <div class="row-main">
-            <div class="row-top">
-              <p class="name">${escapeHtml(item.sender)}</p>
-            </div>
+          <div class="row-main" data-open="message">
+            <div class="row-top"><p class="name">${escapeHtml(item.sender)}</p></div>
             <p class="preview ${rtl}">${escapeHtml(item.content)}</p>
           </div>
-          <div class="meta-col">
+          <div class="meta-col" data-open="message">
             <span class="when">${escapeHtml(formatWhen(eventTime(item)))}</span>
             <span class="count-badge">1</span>
           </div>
         </article>`;
+      return selecting ? html : wrapSwipe(html, item.id);
     }
 
     function renderCall(item) {
       const parsed = parseCall(item);
       const icon = callIcons[parsed.kind] || callIcons.other;
       const preview = [parsed.direction, parsed.duration].filter(Boolean).join(" · ");
-      return `
-        <article class="row" data-id="${escapeHtml(item.id)}">
-          <div class="avatar ${parsed.kind}">${icon}</div>
-          <div class="row-main">
-            <div class="row-top">
-              <p class="name">${escapeHtml(item.sender)}</p>
-            </div>
+      const selected = selectedIds.has(item.id) ? "selected" : "";
+      const html = `
+        <article class="row ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
+          ${checkHtml(item.id)}
+          <div class="avatar ${parsed.kind}" data-open="contact">${icon}</div>
+          <div class="row-main" data-open="message">
+            <div class="row-top"><p class="name">${escapeHtml(item.sender)}</p></div>
             <p class="preview">${escapeHtml(preview || parsed.number)}</p>
           </div>
-          <div class="meta-col">
+          <div class="meta-col" data-open="message">
             <span class="when">${escapeHtml(formatWhen(eventTime(item)))}</span>
           </div>
         </article>`;
+      return selecting ? html : wrapSwipe(html, item.id);
     }
 
     function filteredItems() {
@@ -893,84 +852,287 @@
       }
     }
 
+    function updateSelectBar() {
+      selectBar.classList.toggle("open", selecting);
+      selectCount.textContent = `${selectedIds.size} selected`;
+      app.classList.toggle("selecting", selecting);
+      document.getElementById("livePill").textContent = selecting
+        ? "Selection mode"
+        : "Live sync · hold to select";
+    }
+
     function paint() {
       updateCounts();
+      updateSelectBar();
       pageTitle.textContent = TABS[activeTab].title;
       const items = filteredItems();
       if (!items.length) {
-        const emptyText = searchQuery.trim()
-          ? "No results for this search"
-          : TABS[activeTab].empty;
-        feed.innerHTML = `<div class="empty">${escapeHtml(emptyText)}</div>`;
+        feed.innerHTML = `<div class="empty">${escapeHtml(
+          searchQuery.trim() ? "No results for this search" : TABS[activeTab].empty
+        )}</div>`;
         return;
       }
-
       if (activeTab === "sms") {
         feed.innerHTML = `<div class="bubble-wrap">${items.map(renderSms).join("")}</div>`;
-        return;
-      }
-
-      if (activeTab === "social") {
+      } else if (activeTab === "social") {
         feed.innerHTML = items.map(renderSocial).join("");
-        return;
+      } else {
+        feed.innerHTML = items.map(renderCall).join("");
       }
-
-      feed.innerHTML = items.map(renderCall).join("");
+      bindSwipeHandlers();
     }
 
-    function openSheet(item) {
-      if (!item) return;
+    function fillAvatar(el, item) {
       const type = normalizeType(item.messageType);
-      const avatar = document.getElementById("sheetAvatar");
-      const title = document.getElementById("sheetTitle");
-      const subtitle = document.getElementById("sheetSubtitle");
-      const content = document.getElementById("sheetContent");
-      const typeEl = document.getElementById("sheetType");
-      const timeEl = document.getElementById("sheetTime");
-      const senderEl = document.getElementById("sheetSender");
-
-      title.textContent = item.sender || "Unknown";
-      timeEl.textContent = formatExact(eventTime(item));
-      senderEl.textContent = item.sender || "—";
-      content.textContent = item.content || "";
-      content.classList.toggle("rtl", isRtl(item.content));
-
-      avatar.className = "avatar";
-      avatar.innerHTML = "";
-
+      el.className = "avatar";
+      el.innerHTML = "";
       if (type === "SMS") {
-        avatar.classList.add("sms");
-        avatar.textContent = initials(item.sender);
-        subtitle.textContent = "SMS · " + formatWhen(eventTime(item));
-        typeEl.textContent = "SMS";
+        el.classList.add("sms");
+        el.textContent = initials(item.sender);
       } else if (["WHATSAPP", "TELEGRAM", "INSTAGRAM"].includes(type)) {
         const cls = socialClass(type);
-        avatar.classList.add(cls);
-        avatar.textContent = initials(item.sender);
+        el.classList.add(cls);
+        el.textContent = initials(item.sender);
         const badge = document.createElement("span");
         badge.className = `badge-app ${cls}`;
         badge.innerHTML = socialIcons[type] || socialIcons.TELEGRAM;
-        avatar.appendChild(badge);
-        subtitle.textContent = socialLabel(type) + " · " + formatWhen(eventTime(item));
-        typeEl.textContent = socialLabel(type);
+        el.appendChild(badge);
       } else {
         const parsed = parseCall(item);
-        avatar.classList.add(parsed.kind);
-        avatar.innerHTML = callIcons[parsed.kind] || callIcons.other;
-        subtitle.textContent = parsed.direction + " · " + formatWhen(eventTime(item));
-        typeEl.textContent = "CALL · " + parsed.direction;
+        el.classList.add(parsed.kind);
+        el.innerHTML = callIcons[parsed.kind] || callIcons.other;
       }
+    }
+
+    function openMessageSheet(item) {
+      if (!item) return;
+      const type = normalizeType(item.messageType);
+      fillAvatar(document.getElementById("sheetAvatar"), item);
+      document.getElementById("sheetTitle").textContent = item.sender || "Unknown";
+
+      let typeLabel = type;
+      if (type === "SMS") typeLabel = "SMS";
+      else if (["WHATSAPP", "TELEGRAM", "INSTAGRAM"].includes(type)) typeLabel = socialLabel(type);
+      else typeLabel = "CALL · " + parseCall(item).direction;
+
+      document.getElementById("sheetSubtitle").textContent =
+        typeLabel + " · " + formatWhen(eventTime(item));
+
+      const rtl = isRtl(item.content) ? "rtl" : "";
+      sheetBody.innerHTML = `
+        <p class="sheet-label">Content</p>
+        <div class="sheet-content ${rtl}">${escapeHtml(item.content || "")}</div>
+        <div class="sheet-grid">
+          <div class="sheet-chip"><span>Type</span><strong>${escapeHtml(typeLabel)}</strong></div>
+          <div class="sheet-chip"><span>Time</span><strong>${escapeHtml(formatExact(eventTime(item)))}</strong></div>
+          <div class="sheet-chip" style="grid-column:1/-1"><span>Sender</span><strong>${escapeHtml(item.sender || "—")}</strong></div>
+        </div>`;
 
       sheet.classList.add("open");
       sheetBackdrop.classList.add("open");
-      sheet.setAttribute("aria-hidden", "false");
+    }
+
+    function openContactSheet(sender) {
+      const messages = sortNewestFirst(
+        allItems.filter((item) => String(item.sender || "") === String(sender || ""))
+      );
+      if (!messages.length) return;
+      const latest = messages[0];
+      fillAvatar(document.getElementById("sheetAvatar"), latest);
+      document.getElementById("sheetTitle").textContent = sender || "Unknown";
+      document.getElementById("sheetSubtitle").textContent =
+        `${messages.length} item${messages.length === 1 ? "" : "s"} · last ${formatWhen(eventTime(latest))}`;
+
+      const byType = {};
+      for (const m of messages) {
+        const t = normalizeType(m.messageType);
+        byType[t] = (byType[t] || 0) + 1;
+      }
+      const typeSummary = Object.entries(byType)
+        .map(([k, v]) => `${socialLabel(k) === k && k !== "SMS" && k !== "CALL" ? k : (k === "SMS" || k === "CALL" ? k : socialLabel(k))}: ${v}`)
+        .join(" · ");
+
+      sheetBody.innerHTML = `
+        <div class="sheet-grid">
+          <div class="sheet-chip"><span>Contact</span><strong>${escapeHtml(sender || "—")}</strong></div>
+          <div class="sheet-chip"><span>Total</span><strong>${messages.length}</strong></div>
+          <div class="sheet-chip" style="grid-column:1/-1"><span>Channels</span><strong>${escapeHtml(typeSummary)}</strong></div>
+        </div>
+        <p class="sheet-label" style="margin-top:16px">Recent</p>
+        <div class="sheet-list">
+          ${messages.slice(0, 8).map((m) => `
+            <div class="sheet-list-item">${escapeHtml(formatWhen(eventTime(m)) + " · " + (m.content || ""))}</div>
+          `).join("")}
+        </div>`;
+
+      sheet.classList.add("open");
+      sheetBackdrop.classList.add("open");
     }
 
     function closeSheet() {
       sheet.classList.remove("open");
       sheetBackdrop.classList.remove("open");
-      sheet.setAttribute("aria-hidden", "true");
     }
+
+    function enterSelect(id) {
+      selecting = true;
+      selectedIds = new Set(id ? [id] : []);
+      closeAllSwipes();
+      paint();
+    }
+
+    function exitSelect() {
+      selecting = false;
+      selectedIds = new Set();
+      paint();
+    }
+
+    function toggleSelect(id) {
+      if (selectedIds.has(id)) selectedIds.delete(id);
+      else selectedIds.add(id);
+      if (!selectedIds.size) exitSelect();
+      else paint();
+    }
+
+    async function deleteIds(ids) {
+      if (!ids.length) return;
+      const res = await fetch("/api/sync/messages/bulk-delete", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ids }),
+      });
+      if (!res.ok) throw new Error("delete failed");
+      const data = await res.json();
+      if (typeof data.version === "number") currentVersion = data.version;
+      allItems = allItems.filter((item) => !ids.includes(item.id));
+      ids.forEach((id) => selectedIds.delete(id));
+      if (selecting && !selectedIds.size) selecting = false;
+      paint();
+    }
+
+    function closeAllSwipes(except) {
+      feed.querySelectorAll(".swipe-front").forEach((el) => {
+        if (el !== except) el.style.transform = "translateX(0)";
+      });
+    }
+
+    function bindSwipeHandlers() {
+      feed.querySelectorAll(".swipe").forEach((swipe) => {
+        const front = swipe.querySelector(".swipe-front");
+        if (!front || front.dataset.bound) return;
+        front.dataset.bound = "1";
+
+        let startX = 0;
+        let startY = 0;
+        let currentX = 0;
+        let dragging = false;
+        let opened = false;
+
+        const onStart = (x, y) => {
+          if (selecting) return;
+          startX = x;
+          startY = y;
+          currentX = 0;
+          dragging = true;
+          front.style.transition = "none";
+          closeAllSwipes(front);
+        };
+
+        const onMove = (x, y, event) => {
+          if (!dragging || selecting) return;
+          const dx = x - startX;
+          const dy = y - startY;
+          if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
+            dragging = false;
+            front.style.transition = "transform 0.18s ease";
+            front.style.transform = opened ? "translateX(76px)" : "translateX(0)";
+            return;
+          }
+          if (dx > 0) {
+            event.preventDefault?.();
+            currentX = Math.min(76, dx);
+            front.style.transform = `translateX(${currentX}px)`;
+          }
+        };
+
+        const onEnd = () => {
+          if (!dragging) return;
+          dragging = false;
+          front.style.transition = "transform 0.18s ease";
+          opened = currentX > 38;
+          front.style.transform = opened ? "translateX(76px)" : "translateX(0)";
+        };
+
+        front.addEventListener("touchstart", (e) => {
+          const t = e.touches[0];
+          onStart(t.clientX, t.clientY);
+        }, { passive: true });
+
+        front.addEventListener("touchmove", (e) => {
+          const t = e.touches[0];
+          onMove(t.clientX, t.clientY, e);
+        }, { passive: false });
+
+        front.addEventListener("touchend", onEnd);
+        front.addEventListener("touchcancel", onEnd);
+      });
+    }
+
+    // Click / long-press handling
+    let pressTimer = null;
+    let pressMoved = false;
+    let pressTarget = null;
+
+    feed.addEventListener("pointerdown", (event) => {
+      const itemEl = event.target.closest("[data-id]");
+      if (!itemEl) return;
+      pressMoved = false;
+      pressTarget = itemEl;
+      clearTimeout(pressTimer);
+      pressTimer = setTimeout(() => {
+        if (!pressMoved && pressTarget) {
+          enterSelect(pressTarget.dataset.id);
+          pressTarget = null;
+        }
+      }, 480);
+    });
+
+    feed.addEventListener("pointermove", () => {
+      pressMoved = true;
+      clearTimeout(pressTimer);
+    });
+
+    feed.addEventListener("pointerup", () => clearTimeout(pressTimer));
+    feed.addEventListener("pointercancel", () => clearTimeout(pressTimer));
+
+    feed.addEventListener("click", async (event) => {
+      const swipeDelete = event.target.closest("[data-action='swipe-delete']");
+      if (swipeDelete) {
+        event.preventDefault();
+        await deleteIds([swipeDelete.dataset.id]);
+        return;
+      }
+
+      const itemEl = event.target.closest("[data-id]");
+      if (!itemEl) return;
+      const id = itemEl.dataset.id;
+
+      if (selecting) {
+        toggleSelect(id);
+        return;
+      }
+
+      const openType = event.target.closest("[data-open]")?.dataset.open;
+      const item = allItems.find((entry) => entry.id === id);
+      if (!item) return;
+
+      if (openType === "contact" || event.target.closest(".avatar") || event.target.closest(".who")) {
+        openContactSheet(item.sender);
+        return;
+      }
+
+      openMessageSheet(item);
+    });
 
     async function loadMessages() {
       try {
@@ -990,7 +1152,6 @@
     async function watchForUpdates() {
       if (watching) return;
       watching = true;
-
       while (watching) {
         if (document.hidden) {
           await new Promise((resolve) => {
@@ -1005,7 +1166,6 @@
           await loadMessages();
           continue;
         }
-
         watchAbort = new AbortController();
         try {
           const res = await fetch(`/api/sync/wait?since=${currentVersion}&timeout=20000`, {
@@ -1027,24 +1187,11 @@
       }
     }
 
-    function stopWatching() {
-      watching = false;
-      watchAbort?.abort();
-    }
-
-    feed.addEventListener("click", (event) => {
-      const target = event.target.closest("[data-id]");
-      if (!target) return;
-      const item = allItems.find((entry) => entry.id === target.dataset.id);
-      openSheet(item);
-    });
-
     searchToggle.addEventListener("click", () => {
       const open = searchBox.classList.toggle("open");
       searchToggle.classList.toggle("active", open);
-      if (open) {
-        searchInput.focus();
-      } else {
+      if (open) searchInput.focus();
+      else {
         searchQuery = "";
         searchInput.value = "";
         searchClear.classList.remove("show");
@@ -1066,17 +1213,29 @@
       paint();
     });
 
+    document.getElementById("selectCancel").addEventListener("click", exitSelect);
+    document.getElementById("selectDelete").addEventListener("click", async () => {
+      const ids = [...selectedIds];
+      if (!ids.length) return;
+      if (!confirm(`Delete ${ids.length} item(s)?`)) return;
+      await deleteIds(ids);
+    });
+
     document.getElementById("sheetClose").addEventListener("click", closeSheet);
     sheetBackdrop.addEventListener("click", closeSheet);
-    document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeSheet();
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        closeSheet();
+        if (selecting) exitSelect();
+      }
     });
 
     document.querySelectorAll(".nav-item").forEach((btn) => {
       btn.addEventListener("click", () => {
         activeTab = btn.dataset.tab;
         document.querySelectorAll(".nav-item").forEach((el) => el.classList.toggle("active", el === btn));
-        paint();
+        if (selecting) exitSelect();
+        else paint();
       });
     });
 
@@ -1084,10 +1243,16 @@
     document.getElementById("clearBtn").addEventListener("click", async () => {
       if (!confirm("Clear all messages?")) return;
       await fetch("/api/sync/messages", { method: "DELETE" });
+      selectedIds = new Set();
+      selecting = false;
       await loadMessages();
     });
 
-    window.addEventListener("beforeunload", stopWatching);
+    window.addEventListener("beforeunload", () => {
+      watching = false;
+      watchAbort?.abort();
+    });
+
     loadMessages().then(watchForUpdates);
   </script>
 </body>

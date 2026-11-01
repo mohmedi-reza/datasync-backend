@@ -110,6 +110,26 @@ export class RedisStore {
     return messages.find((m) => m.id === id) ?? null;
   }
 
+  async removeByIds(ids = []) {
+    const idSet = new Set((ids || []).map(String));
+    if (!idSet.size) return 0;
+
+    const messages = await this.#readAll();
+    const kept = messages.filter((m) => !idSet.has(String(m.id)));
+    const removed = messages.length - kept.length;
+    if (!removed) return 0;
+
+    await this.redis.del(LIST_KEY);
+    if (kept.length) {
+      // LPUSH oldest first so newest ends at head
+      for (let i = kept.length - 1; i >= 0; i -= 1) {
+        await this.redis.lpush(LIST_KEY, kept[i]);
+      }
+    }
+    await this.#bump();
+    return removed;
+  }
+
   async clear() {
     await this.#migrateLegacyIfNeeded();
     const removed = await this.redis.llen(LIST_KEY);

@@ -53,6 +53,16 @@ export class MessageStore {
     return this.messages.find((m) => m.id === id) ?? null;
   }
 
+  async removeByIds(ids = []) {
+    const idSet = new Set((ids || []).map(String));
+    if (!idSet.size) return 0;
+    const before = this.messages.length;
+    this.messages = this.messages.filter((m) => !idSet.has(String(m.id)));
+    const removed = before - this.messages.length;
+    if (removed > 0) this.#bump();
+    return removed;
+  }
+
   async clear() {
     const removed = this.messages.length;
     this.messages = [];

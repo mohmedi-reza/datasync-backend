@@ -90,6 +90,23 @@ export function createSyncRouter(store) {
     return res.json({ ok: true, item });
   });
 
+  router.delete("/messages/:id", async (req, res) => {
+    const removed = await store.removeByIds([req.params.id]);
+    if (!removed) {
+      return res.status(404).json({ ok: false, error: "Not Found" });
+    }
+    return res.json({ ok: true, removed, version: await store.getVersion() });
+  });
+
+  router.post("/messages/bulk-delete", async (req, res) => {
+    const ids = Array.isArray(req.body?.ids) ? req.body.ids.map(String) : [];
+    if (!ids.length) {
+      return res.status(400).json({ ok: false, error: "ids required" });
+    }
+    const removed = await store.removeByIds(ids);
+    return res.json({ ok: true, removed, version: await store.getVersion() });
+  });
+
   /** Tiny endpoint — used by dashboard change detection. */
   router.get("/version", async (_req, res) => {
     return res.json({ ok: true, version: await store.getVersion() });
