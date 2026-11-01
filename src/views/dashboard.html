@@ -45,8 +45,12 @@
       overflow: hidden;
       isolation: isolate;
     }
+    .phone.sheet-open .app-header,
     .phone.sheet-open .feed,
-    .phone.sheet-open .bottom-nav {
+    .phone.sheet-open .bottom-nav,
+    .phone.sheet-closing .app-header,
+    .phone.sheet-closing .feed,
+    .phone.sheet-closing .bottom-nav {
       pointer-events: none;
     }
 
@@ -451,8 +455,9 @@
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.24s ease;
-      z-index: 40;
+      z-index: 80;
       backdrop-filter: blur(2px);
+      -webkit-tap-highlight-color: transparent;
     }
     .sheet-backdrop.open { opacity: 1; pointer-events: auto; }
 
@@ -467,14 +472,19 @@
       box-shadow: 0 -18px 48px rgba(27, 37, 89, 0.16);
       transform: translate3d(0, 105%, 0);
       transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
-      z-index: 41;
+      z-index: 81;
       display: flex;
       flex-direction: column;
       overflow: hidden;
       padding-bottom: calc(10px + env(safe-area-inset-bottom));
       will-change: transform;
+      pointer-events: none;
+      -webkit-tap-highlight-color: transparent;
     }
-    .sheet.open { transform: translate3d(0, 0, 0); }
+    .sheet.open {
+      transform: translate3d(0, 0, 0);
+      pointer-events: auto;
+    }
 
     .sheet-handle {
       width: 36px;
@@ -1126,7 +1136,14 @@
       return type || "Message";
     }
 
+    let sheetCloseTimer = null;
+
     function showSheet() {
+      if (sheetCloseTimer) {
+        clearTimeout(sheetCloseTimer);
+        sheetCloseTimer = null;
+      }
+      app.classList.remove("sheet-closing");
       app.classList.add("sheet-open");
       sheet.classList.add("open");
       sheetBackdrop.classList.add("open");
@@ -1157,7 +1174,9 @@
 
     function openContactSheet(sender) {
       const messages = sortNewestFirst(
-        allItems.filter((item) => String(item.sender || "") === String(sender || ""))
+        dedupeItems(
+          allItems.filter((item) => String(item.sender || "") === String(sender || ""))
+        )
       );
       if (!messages.length) return;
       const latest = messages[0];
@@ -1197,11 +1216,24 @@
       showSheet();
     }
 
-    function closeSheet() {
+    function closeSheet(event) {
+      if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+      }
+      if (!sheet.classList.contains("open") && !app.classList.contains("sheet-open")) return;
+
+      app.classList.add("sheet-closing");
       app.classList.remove("sheet-open");
       sheet.classList.remove("open");
       sheetBackdrop.classList.remove("open");
       sheet.setAttribute("aria-hidden", "true");
+
+      if (sheetCloseTimer) clearTimeout(sheetCloseTimer);
+      sheetCloseTimer = setTimeout(() => {
+        app.classList.remove("sheet-closing");
+        sheetCloseTimer = null;
+      }, 320);
     }
 
     function idsForElement(el) {
@@ -1488,11 +1520,16 @@
       if (openConversation) openContactSheet(openConversation);
     });
 
-    document.getElementById("sheetClose").addEventListener("click", closeSheet);
+    const sheetCloseBtn = document.getElementById("sheetClose");
+    sheetCloseBtn.addEventListener("click", closeSheet);
+    sheetCloseBtn.addEventListener("pointerup", (e) => {
+      if (e.pointerType === "touch") closeSheet(e);
+    });
     sheetBackdrop.addEventListener("click", closeSheet);
+    sheet.addEventListener("click", (e) => e.stopPropagation());
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape") {
-        closeSheet();
+        closeSheet(e);
         if (selecting) exitSelect();
         else if (openConversation) closeConversation();
       }
