@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { sortNewestFirst } from "./sort.js";
 
 /**
  * In-memory store. Lost on process restart / Vercel redeploy.
@@ -42,7 +43,7 @@ export class MessageStore {
   }
 
   async list({ limit = 50, messageType } = {}) {
-    let items = this.messages;
+    let items = sortNewestFirst(this.messages);
 
     if (messageType) {
       items = items.filter((m) => m.messageType === messageType);

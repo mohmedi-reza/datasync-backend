@@ -1,17 +1,21 @@
 import { randomUUID } from "node:crypto";
 import { Redis } from "@upstash/redis";
+import { sortNewestFirst } from "./sort.js";
 
-const KEY = "datasync:messages";
+const LEGACY_KEY = "datasync:messages";
+const LIST_KEY = "datasync:messages:list";
 const VERSION_KEY = "datasync:version";
 
 /**
- * Durable store via Upstash Redis. Survives Vercel rebuilds/redeploys.
+ * Durable store via Upstash Redis.
+ * Uses a Redis LIST (LPUSH) so insert order stays newest-first.
  */
 export class RedisStore {
   constructor({ maxMessages = 1000, url, token } = {}) {
     this.kind = "redis";
     this.maxMessages = maxMessages;
     this.redis = new Redis({ url, token });
+    this._migrated = false;
   }
 
   async getVersion() {
@@ -24,26 +28,59 @@ export class RedisStore {
     return this.redis.incr(VERSION_KEY);
   }
 
-  async #readAll() {
-    const raw = await this.redis.get(KEY);
-    if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    if (typeof raw === "string") {
+  async #migrateLegacyIfNeeded() {
+    if (this._migrated) return;
+    this._migrated = true;
+
+    const existing = await this.redis.llen(LIST_KEY);
+    if (existing > 0) return;
+
+    const raw = await this.redis.get(LEGACY_KEY);
+    if (!raw) return;
+
+    let legacy = [];
+    if (Array.isArray(raw)) legacy = raw;
+    else if (typeof raw === "string") {
       try {
         const parsed = JSON.parse(raw);
-        return Array.isArray(parsed) ? parsed : [];
+        if (Array.isArray(parsed)) legacy = parsed;
       } catch {
-        return [];
+        legacy = [];
       }
     }
-    return [];
+
+    if (!legacy.length) return;
+
+    const ordered = sortNewestFirst(legacy);
+    // LPUSH in reverse so oldest ends up at the tail
+    for (let i = ordered.length - 1; i >= 0; i -= 1) {
+      await this.redis.lpush(LIST_KEY, ordered[i]);
+    }
+    await this.redis.ltrim(LIST_KEY, 0, this.maxMessages - 1);
+    await this.redis.del(LEGACY_KEY);
   }
 
-  async #writeAll(messages) {
-    await this.redis.set(KEY, messages);
+  async #readAll() {
+    await this.#migrateLegacyIfNeeded();
+    const items = await this.redis.lrange(LIST_KEY, 0, this.maxMessages - 1);
+    const normalized = (items || []).map((item) => {
+      if (item && typeof item === "object") return item;
+      if (typeof item === "string") {
+        try {
+          return JSON.parse(item);
+        } catch {
+          return null;
+        }
+      }
+      return null;
+    }).filter(Boolean);
+
+    return sortNewestFirst(normalized);
   }
 
   async add(payload) {
+    await this.#migrateLegacyIfNeeded();
+
     const record = {
       id: randomUUID(),
       messageType: payload.messageType,
@@ -53,12 +90,9 @@ export class RedisStore {
       receivedAt: Date.now(),
     };
 
-    const messages = await this.#readAll();
-    messages.unshift(record);
-    if (messages.length > this.maxMessages) {
-      messages.length = this.maxMessages;
-    }
-    await this.#writeAll(messages);
+    // Atomic newest-first insert
+    await this.redis.lpush(LIST_KEY, record);
+    await this.redis.ltrim(LIST_KEY, 0, this.maxMessages - 1);
     await this.#bump();
     return record;
   }
@@ -79,11 +113,12 @@ export class RedisStore {
   }
 
   async clear() {
-    const messages = await this.#readAll();
-    const removed = messages.length;
-    await this.redis.del(KEY);
+    await this.#migrateLegacyIfNeeded();
+    const removed = await this.redis.llen(LIST_KEY);
+    await this.redis.del(LIST_KEY);
+    await this.redis.del(LEGACY_KEY);
     await this.#bump();
-    return removed;
+    return removed || 0;
   }
 
   async stats() {
