@@ -630,7 +630,7 @@
 
     async function loadMessages() {
       try {
-        const res = await fetch("/api/sync/messages?limit=100", { cache: "no-store" });
+        const res = await fetch("/api/sync/messages?limit=1000", { cache: "no-store" });
         if (!res.ok) throw new Error("Failed");
         const data = await res.json();
         allItems = sortNewestFirst(Array.isArray(data.items) ? data.items : []);

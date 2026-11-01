@@ -104,7 +104,7 @@ export class RedisStore {
       items = items.filter((m) => m.messageType === messageType);
     }
 
-    return items.slice(0, Math.min(Math.max(limit, 1), 500));
+    return items.slice(0, Math.min(Math.max(limit, 1), this.maxMessages));
   }
 
   async getById(id) {
