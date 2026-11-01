@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: datasync-backend
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_TOKEN
+        generateValue: true
+      - key: MAX_MESSAGES
+        value: "1000"

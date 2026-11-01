@@ -1,0 +1,79 @@
+# DataSync Backend
+
+HTTP API for the **DataSync** Android app. Receives POST payloads from `SyncApiService` and keeps them in memory for inspection.
+
+Designed for a free [Render](https://render.com) **Web Service**.
+
+## Endpoints
+
+| Method | Path | Auth | Description |
+|--------|------|------|-------------|
+| `GET` | `/health` | no | Health check |
+| `POST` | `/api/sync` | optional | Accept Android payload |
+| `GET` | `/api/sync/messages` | optional | List recent messages |
+| `GET` | `/api/sync/messages/:id` | optional | Get one message |
+| `GET` | `/api/sync/stats` | optional | Counts by type |
+| `DELETE` | `/api/sync/messages` | optional | Clear store |
+
+### Android payload
+
+```json
+{
+  "messageType": "DATA_SYNC",
+  "sender": "+15550198234",
+  "content": "Payload: 18 records synced.",
+  "timestamp": 1710000000000
+}
+```
+
+### Example curl
+
+```bash
+curl -X POST "https://YOUR-SERVICE.onrender.com/api/sync" \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -d '{
+    "messageType": "SMS",
+    "sender": "+15550198234",
+    "content": "Hello from DataSync",
+    "timestamp": 1710000000000
+  }'
+```
+
+In the Android Testing screen, set URL to:
+
+```text
+https://YOUR-SERVICE.onrender.com/api/sync
+```
+
+## Local run
+
+```bash
+cp .env.example .env
+npm install
+npm run dev
+```
+
+Server defaults to `http://localhost:3000`.
+
+## Deploy on Render (free)
+
+1. Push this folder to its **own** GitHub repository.
+2. In Render → **New Web Service**.
+3. Connect the repo.
+4. Settings:
+   - **Runtime:** Node
+   - **Build command:** `npm install`
+   - **Start command:** `npm start`
+5. Environment variables:
+   - `AUTH_TOKEN` = a random secret (recommended)
+   - `MAX_MESSAGES` = `1000` (optional)
+6. Deploy, then copy the public URL into the Android app.
+
+Or use Blueprint: Render → New → Blueprint → select this repo (`render.yaml`).
+
+## Notes
+
+- Free Render web services **sleep** after idle time; the first request after sleep can be slow.
+- Storage is **in-memory**. Messages are lost when the service restarts or wakes from sleep. Fine for testing; add Postgres later if you need durability.
+- If `AUTH_TOKEN` is empty, auth is disabled. Keep it set in production.
