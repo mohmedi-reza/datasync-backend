@@ -12,14 +12,14 @@
       --ink: #14201b;
       --muted: #5f6f68;
       --line: rgba(20, 32, 27, 0.1);
-      --panel: rgba(255, 252, 247, 0.72);
+      --panel: rgba(255, 252, 247, 0.78);
       --accent: #1f6f5b;
       --accent-soft: rgba(31, 111, 91, 0.12);
       --danger: #9b3b2e;
       --bg0: #e8efe9;
       --bg1: #f7f3ec;
       --bg2: #d9e7e1;
-      --shadow: 0 24px 60px rgba(20, 32, 27, 0.08);
+      --shadow: 0 18px 40px rgba(20, 32, 27, 0.07);
     }
 
     * { box-sizing: border-box; }
@@ -50,7 +50,7 @@
       align-items: flex-end;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 36px;
+      margin-bottom: 28px;
       animation: rise 0.7s ease both;
     }
 
@@ -93,23 +93,29 @@
       animation: pulse 1.8s ease infinite;
     }
 
-    .summary {
+    .toolbar {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       justify-content: space-between;
       gap: 16px;
-      margin-bottom: 18px;
+      margin-bottom: 20px;
+      padding: 16px 18px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
       animation: rise 0.7s ease 0.08s both;
     }
 
-    .summary h2 {
+    .toolbar h2 {
       margin: 0;
       font-size: 1rem;
       font-weight: 500;
       color: var(--muted);
     }
 
-    .summary strong {
+    .toolbar strong {
       color: var(--ink);
       font-weight: 600;
     }
@@ -117,6 +123,7 @@
     .actions {
       display: flex;
       gap: 8px;
+      flex-shrink: 0;
     }
 
     button {
@@ -146,18 +153,20 @@
     }
 
     .feed {
-      background: var(--panel);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.55);
-      border-radius: 28px;
-      box-shadow: var(--shadow);
-      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
       animation: rise 0.7s ease 0.14s both;
     }
 
     .empty {
       padding: 64px 28px;
       text-align: center;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
     }
 
     .empty p {
@@ -177,25 +186,25 @@
     }
 
     .item {
-      padding: 20px 24px;
-      border-top: 1px solid var(--line);
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.55);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
       animation: fadeIn 0.35s ease both;
     }
 
-    .item:first-child { border-top: 0; }
-
-    .item-top {
+    .item-head {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 10px;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
     }
 
     .type {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
       font-size: 0.72rem;
       font-weight: 600;
       letter-spacing: 0.08em;
@@ -212,13 +221,26 @@
       white-space: nowrap;
     }
 
-    .sender {
-      margin: 0 0 6px;
-      font-size: 0.95rem;
-      font-weight: 600;
+    .block {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--line);
     }
 
-    .content {
+    .block:last-child {
+      border-bottom: 0;
+    }
+
+    .label {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .value {
       margin: 0;
       color: var(--ink);
       font-size: 1.02rem;
@@ -227,11 +249,15 @@
       word-break: break-word;
     }
 
-    .meta {
-      margin-top: 12px;
-      font-size: 0.72rem;
-      color: var(--muted);
+    .value.sender {
+      font-weight: 600;
+    }
+
+    .value.mono {
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 0.78rem;
+      color: var(--muted);
+      word-break: break-all;
     }
 
     footer {
@@ -253,15 +279,16 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(6px); }
+      from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     @media (max-width: 560px) {
       .shell { width: min(100% - 24px, 760px); padding-top: 28px; }
       header { flex-direction: column; align-items: flex-start; }
-      .summary { flex-direction: column; align-items: flex-start; }
-      .item { padding: 18px 18px; }
+      .toolbar { flex-direction: column; align-items: flex-start; }
+      .item-head,
+      .block { padding: 14px 16px; }
     }
   </style>
 </head>
@@ -278,7 +305,7 @@
       </div>
     </header>
 
-    <div class="summary">
+    <div class="toolbar">
       <h2><strong id="count">0</strong> payloads received</h2>
       <div class="actions">
         <button type="button" id="refreshBtn">Refresh</button>
@@ -341,14 +368,27 @@
       feed.innerHTML = items.map((item, index) => {
         const isNew = !firstLoad && !knownIds.has(item.id);
         return `
-          <article class="item" style="${isNew ? "" : `animation-delay:${Math.min(index, 8) * 20}ms`}">
-            <div class="item-top">
+          <article class="item" style="${isNew ? "" : `animation-delay:${Math.min(index, 8) * 30}ms`}">
+            <div class="item-head">
               <span class="type">${escapeHtml(item.messageType)}</span>
               <time class="time">${escapeHtml(formatTime(item.receivedAt || item.timestamp))}</time>
             </div>
-            <p class="sender">${escapeHtml(item.sender)}</p>
-            <p class="content">${escapeHtml(item.content)}</p>
-            <div class="meta">${escapeHtml(item.id)}</div>
+            <div class="block">
+              <span class="label">Sender</span>
+              <p class="value sender">${escapeHtml(item.sender)}</p>
+            </div>
+            <div class="block">
+              <span class="label">Content</span>
+              <p class="value">${escapeHtml(item.content)}</p>
+            </div>
+            <div class="block">
+              <span class="label">Timestamp</span>
+              <p class="value mono">${escapeHtml(String(item.timestamp ?? "—"))}</p>
+            </div>
+            <div class="block">
+              <span class="label">ID</span>
+              <p class="value mono">${escapeHtml(item.id)}</p>
+            </div>
           </article>`;
       }).join("");
       knownIds = nextIds;
