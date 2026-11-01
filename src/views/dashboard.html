@@ -43,10 +43,11 @@
       flex-direction: column;
       position: relative;
       box-shadow: var(--shadow);
+      overflow: hidden;
     }
 
     header.app-header {
-      padding: 22px 20px 10px;
+      padding: 22px 20px 12px;
       background: var(--surface);
       position: sticky;
       top: 0;
@@ -72,7 +73,7 @@
     .header-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 4px;
     }
 
     .icon-btn {
@@ -87,7 +88,8 @@
       cursor: pointer;
     }
 
-    .icon-btn:hover { background: var(--line); color: var(--ink); }
+    .icon-btn:hover,
+    .icon-btn.active { background: var(--line); color: var(--ink); }
 
     .icon-btn svg {
       width: 20px;
@@ -99,7 +101,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      margin-top: 6px;
+      margin-top: 4px;
       font-size: 0.78rem;
       font-weight: 500;
       color: var(--muted);
@@ -110,9 +112,62 @@
       height: 7px;
       border-radius: 50%;
       background: var(--green);
-      box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
       animation: pulse 1.8s ease infinite;
     }
+
+    .search-box {
+      display: none;
+      margin-top: 12px;
+      position: relative;
+    }
+
+    .search-box.open { display: block; }
+
+    .search-box input {
+      width: 100%;
+      border: 0;
+      outline: none;
+      background: #f3f5fa;
+      border-radius: 14px;
+      padding: 12px 40px 12px 42px;
+      font: inherit;
+      font-size: 0.92rem;
+      color: var(--ink);
+    }
+
+    .search-box input::placeholder { color: var(--muted); }
+
+    .search-box .search-ico,
+    .search-box .clear-ico {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      fill: var(--muted);
+      pointer-events: none;
+    }
+
+    .search-box .search-ico { left: 14px; }
+
+    .search-box .clear-ico-btn {
+      position: absolute;
+      right: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 28px;
+      height: 28px;
+      border: 0;
+      border-radius: 50%;
+      background: transparent;
+      color: var(--muted);
+      display: none;
+      place-items: center;
+      cursor: pointer;
+    }
+
+    .search-box .clear-ico-btn.show { display: grid; }
+    .search-box .clear-ico-btn svg { width: 16px; height: 16px; fill: currentColor; }
 
     .feed {
       flex: 1;
@@ -128,18 +183,24 @@
       line-height: 1.6;
     }
 
+    .row,
+    .msg-block {
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
     .row {
       display: grid;
       grid-template-columns: 56px 1fr auto;
       gap: 12px;
       align-items: center;
-      padding: 12px 12px;
+      padding: 12px;
       border-radius: 18px;
-      cursor: default;
       animation: fadeIn 0.28s ease both;
     }
 
-    .row:hover { background: #f8f9fd; }
+    .row:hover,
+    .row:active { background: #f8f9fd; }
 
     .avatar {
       width: 52px;
@@ -166,11 +227,7 @@
     .avatar.missed { background: #fee2e2; color: var(--red); }
     .avatar.other { background: #e2e8f0; color: #475569; }
 
-    .avatar svg {
-      width: 24px;
-      height: 24px;
-      fill: currentColor;
-    }
+    .avatar svg { width: 24px; height: 24px; fill: currentColor; }
 
     .avatar .badge-app {
       position: absolute;
@@ -188,12 +245,7 @@
     .avatar .badge-app.wa { background: var(--wa); }
     .avatar .badge-app.tg { background: var(--tg); }
     .avatar .badge-app.ig { background: var(--ig); }
-
-    .avatar .badge-app svg {
-      width: 11px;
-      height: 11px;
-      fill: #fff;
-    }
+    .avatar .badge-app svg { width: 11px; height: 11px; fill: #fff; }
 
     .row-main { min-width: 0; }
 
@@ -236,10 +288,7 @@
       font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
     }
 
-    .preview.rtl {
-      direction: rtl;
-      text-align: right;
-    }
+    .preview.rtl { direction: rtl; text-align: right; }
 
     .meta-col {
       display: flex;
@@ -275,7 +324,7 @@
       flex-direction: column;
       align-items: flex-start;
       gap: 6px;
-      max-width: 88%;
+      max-width: 92%;
       animation: fadeIn 0.28s ease both;
     }
 
@@ -309,6 +358,10 @@
       line-height: 1.55;
       white-space: pre-wrap;
       word-break: break-word;
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
     }
 
     .bubble.rtl {
@@ -328,6 +381,7 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       gap: 8px;
+      z-index: 5;
     }
 
     .nav-item {
@@ -347,11 +401,7 @@
       position: relative;
     }
 
-    .nav-item svg {
-      width: 22px;
-      height: 22px;
-      fill: currentColor;
-    }
+    .nav-item svg { width: 22px; height: 22px; fill: currentColor; }
 
     .nav-item .dot-count {
       position: absolute;
@@ -370,9 +420,7 @@
     }
 
     .nav-item .dot-count.show { display: grid; }
-
     .nav-item.active { color: var(--ink); }
-
     .nav-item.active::after {
       content: "";
       width: 5px;
@@ -380,6 +428,153 @@
       border-radius: 50%;
       background: var(--ink);
       margin-top: 2px;
+    }
+
+    /* Bottom sheet */
+    .sheet-backdrop {
+      position: absolute;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.35);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.22s ease;
+      z-index: 20;
+    }
+
+    .sheet-backdrop.open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .sheet {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      max-height: min(82vh, 720px);
+      background: var(--surface);
+      border-radius: 24px 24px 0 0;
+      box-shadow: 0 -12px 40px rgba(27, 37, 89, 0.14);
+      transform: translateY(110%);
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+      z-index: 21;
+      display: flex;
+      flex-direction: column;
+      padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .sheet.open { transform: translateY(0); }
+
+    .sheet-handle {
+      width: 42px;
+      height: 4px;
+      border-radius: 999px;
+      background: #d7dce8;
+      margin: 10px auto 6px;
+      flex-shrink: 0;
+    }
+
+    .sheet-head {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 18px 14px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .sheet-head .avatar { width: 46px; height: 46px; font-size: 0.85rem; }
+
+    .sheet-head-text { min-width: 0; flex: 1; }
+
+    .sheet-head-text h2 {
+      margin: 0;
+      font-size: 1.05rem;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .sheet-head-text p {
+      margin: 3px 0 0;
+      font-size: 0.78rem;
+      color: var(--muted);
+      font-weight: 500;
+    }
+
+    .sheet-close {
+      width: 36px;
+      height: 36px;
+      border: 0;
+      border-radius: 50%;
+      background: #f3f5fa;
+      color: var(--muted);
+      display: grid;
+      place-items: center;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+
+    .sheet-close svg { width: 18px; height: 18px; fill: currentColor; }
+
+    .sheet-body {
+      padding: 16px 18px 22px;
+      overflow: auto;
+    }
+
+    .sheet-label {
+      margin: 0 0 6px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    .sheet-content {
+      margin: 0 0 18px;
+      padding: 14px 16px;
+      border-radius: 16px;
+      background: #f5f7fb;
+      font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
+      font-size: 0.98rem;
+      font-weight: 500;
+      line-height: 1.65;
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: var(--ink);
+    }
+
+    .sheet-content.rtl { direction: rtl; text-align: right; }
+
+    .sheet-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .sheet-chip {
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: #f8f9fd;
+      border: 1px solid var(--line);
+    }
+
+    .sheet-chip span {
+      display: block;
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .sheet-chip strong {
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--ink);
+      word-break: break-word;
     }
 
     @keyframes pulse {
@@ -400,6 +595,9 @@
       <div class="header-row">
         <h1 class="title" id="pageTitle">Messages</h1>
         <div class="header-actions">
+          <button type="button" class="icon-btn" id="searchToggle" title="Search">
+            <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+          </button>
           <button type="button" class="icon-btn" id="refreshBtn" title="Refresh">
             <svg viewBox="0 0 24 24"><path d="M17.65 6.35A7.95 7.95 0 0 0 12 4V1L7 6l5 5V7c2.76 0 5 2.24 5 5a5 5 0 0 1-8.9 3.1L6.7 16.5A7.97 7.97 0 0 0 20 12c0-2.21-.9-4.21-2.35-5.65zM6 12c0-1.48.65-2.8 1.69-3.71L6.35 6.94A7.97 7.97 0 0 0 4 12c0 3.87 2.75 7.1 6.37 7.85l.63-1.98A6.001 6.001 0 0 1 6 12z"/></svg>
           </button>
@@ -409,6 +607,13 @@
         </div>
       </div>
       <div class="live-pill"><i></i> Live sync</div>
+      <div class="search-box" id="searchBox">
+        <svg class="search-ico" viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input id="searchInput" type="search" placeholder="Search messages..." autocomplete="off" />
+        <button type="button" class="clear-ico-btn" id="searchClear" title="Clear search">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
     </header>
 
     <section class="feed" id="feed" aria-live="polite"></section>
@@ -430,6 +635,30 @@
         Calls
       </button>
     </nav>
+
+    <div class="sheet-backdrop" id="sheetBackdrop"></div>
+    <aside class="sheet" id="sheet" aria-hidden="true">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <div class="avatar" id="sheetAvatar">?</div>
+        <div class="sheet-head-text">
+          <h2 id="sheetTitle">—</h2>
+          <p id="sheetSubtitle">—</p>
+        </div>
+        <button type="button" class="sheet-close" id="sheetClose" aria-label="Close">
+          <svg viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </div>
+      <div class="sheet-body">
+        <p class="sheet-label">Content</p>
+        <div class="sheet-content" id="sheetContent"></div>
+        <div class="sheet-grid">
+          <div class="sheet-chip"><span>Type</span><strong id="sheetType">—</strong></div>
+          <div class="sheet-chip"><span>Time</span><strong id="sheetTime">—</strong></div>
+          <div class="sheet-chip" style="grid-column: 1 / -1"><span>Sender</span><strong id="sheetSender">—</strong></div>
+        </div>
+      </div>
+    </aside>
   </div>
 
   <script>
@@ -453,9 +682,16 @@
 
     const feed = document.getElementById("feed");
     const pageTitle = document.getElementById("pageTitle");
+    const searchBox = document.getElementById("searchBox");
+    const searchInput = document.getElementById("searchInput");
+    const searchToggle = document.getElementById("searchToggle");
+    const searchClear = document.getElementById("searchClear");
+    const sheet = document.getElementById("sheet");
+    const sheetBackdrop = document.getElementById("sheetBackdrop");
 
     let activeTab = "sms";
     let allItems = [];
+    let searchQuery = "";
     let currentVersion = 0;
     let watchAbort = null;
     let watching = false;
@@ -503,6 +739,17 @@
     }
 
     function formatExact(ms) {
+      if (!ms) return "";
+      return new Date(ms).toLocaleString(undefined, {
+        month: "short",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+        second: "2-digit",
+      });
+    }
+
+    function formatClock(ms) {
       if (!ms) return "";
       return new Date(ms).toLocaleTimeString(undefined, { hour: "2-digit", minute: "2-digit" });
     }
@@ -562,13 +809,21 @@
       return type;
     }
 
+    function matchesSearch(item) {
+      const q = searchQuery.trim().toLowerCase();
+      if (!q) return true;
+      return [item.sender, item.content, item.messageType]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(q));
+    }
+
     function renderSms(item) {
       const rtl = isRtl(item.content) ? "rtl" : "";
       return `
-        <article class="msg-block">
+        <article class="msg-block" data-id="${escapeHtml(item.id)}">
           <div class="msg-meta">
             <span class="who">${escapeHtml(item.sender)}</span>
-            <span class="at">${escapeHtml(formatExact(eventTime(item)))}</span>
+            <span class="at">${escapeHtml(formatClock(eventTime(item)))}</span>
           </div>
           <p class="bubble ${rtl}">${escapeHtml(item.content)}</p>
         </article>`;
@@ -580,7 +835,7 @@
       const rtl = isRtl(item.content) ? "rtl" : "";
       const icon = socialIcons[type] || socialIcons.TELEGRAM;
       return `
-        <article class="row">
+        <article class="row" data-id="${escapeHtml(item.id)}">
           <div class="avatar ${cls}">
             ${escapeHtml(initials(item.sender))}
             <span class="badge-app ${cls}">${icon}</span>
@@ -593,7 +848,7 @@
           </div>
           <div class="meta-col">
             <span class="when">${escapeHtml(formatWhen(eventTime(item)))}</span>
-            <span class="count-badge" title="${escapeHtml(socialLabel(type))}">1</span>
+            <span class="count-badge">1</span>
           </div>
         </article>`;
     }
@@ -603,7 +858,7 @@
       const icon = callIcons[parsed.kind] || callIcons.other;
       const preview = [parsed.direction, parsed.duration].filter(Boolean).join(" · ");
       return `
-        <article class="row">
+        <article class="row" data-id="${escapeHtml(item.id)}">
           <div class="avatar ${parsed.kind}">${icon}</div>
           <div class="row-main">
             <div class="row-top">
@@ -619,7 +874,9 @@
 
     function filteredItems() {
       return sortNewestFirst(
-        allItems.filter((item) => TABS[activeTab].match(normalizeType(item.messageType)))
+        allItems.filter((item) =>
+          TABS[activeTab].match(normalizeType(item.messageType)) && matchesSearch(item)
+        )
       );
     }
 
@@ -641,7 +898,10 @@
       pageTitle.textContent = TABS[activeTab].title;
       const items = filteredItems();
       if (!items.length) {
-        feed.innerHTML = `<div class="empty">${escapeHtml(TABS[activeTab].empty)}</div>`;
+        const emptyText = searchQuery.trim()
+          ? "No results for this search"
+          : TABS[activeTab].empty;
+        feed.innerHTML = `<div class="empty">${escapeHtml(emptyText)}</div>`;
         return;
       }
 
@@ -656,6 +916,60 @@
       }
 
       feed.innerHTML = items.map(renderCall).join("");
+    }
+
+    function openSheet(item) {
+      if (!item) return;
+      const type = normalizeType(item.messageType);
+      const avatar = document.getElementById("sheetAvatar");
+      const title = document.getElementById("sheetTitle");
+      const subtitle = document.getElementById("sheetSubtitle");
+      const content = document.getElementById("sheetContent");
+      const typeEl = document.getElementById("sheetType");
+      const timeEl = document.getElementById("sheetTime");
+      const senderEl = document.getElementById("sheetSender");
+
+      title.textContent = item.sender || "Unknown";
+      timeEl.textContent = formatExact(eventTime(item));
+      senderEl.textContent = item.sender || "—";
+      content.textContent = item.content || "";
+      content.classList.toggle("rtl", isRtl(item.content));
+
+      avatar.className = "avatar";
+      avatar.innerHTML = "";
+
+      if (type === "SMS") {
+        avatar.classList.add("sms");
+        avatar.textContent = initials(item.sender);
+        subtitle.textContent = "SMS · " + formatWhen(eventTime(item));
+        typeEl.textContent = "SMS";
+      } else if (["WHATSAPP", "TELEGRAM", "INSTAGRAM"].includes(type)) {
+        const cls = socialClass(type);
+        avatar.classList.add(cls);
+        avatar.textContent = initials(item.sender);
+        const badge = document.createElement("span");
+        badge.className = `badge-app ${cls}`;
+        badge.innerHTML = socialIcons[type] || socialIcons.TELEGRAM;
+        avatar.appendChild(badge);
+        subtitle.textContent = socialLabel(type) + " · " + formatWhen(eventTime(item));
+        typeEl.textContent = socialLabel(type);
+      } else {
+        const parsed = parseCall(item);
+        avatar.classList.add(parsed.kind);
+        avatar.innerHTML = callIcons[parsed.kind] || callIcons.other;
+        subtitle.textContent = parsed.direction + " · " + formatWhen(eventTime(item));
+        typeEl.textContent = "CALL · " + parsed.direction;
+      }
+
+      sheet.classList.add("open");
+      sheetBackdrop.classList.add("open");
+      sheet.setAttribute("aria-hidden", "false");
+    }
+
+    function closeSheet() {
+      sheet.classList.remove("open");
+      sheetBackdrop.classList.remove("open");
+      sheet.setAttribute("aria-hidden", "true");
     }
 
     async function loadMessages() {
@@ -717,6 +1031,46 @@
       watching = false;
       watchAbort?.abort();
     }
+
+    feed.addEventListener("click", (event) => {
+      const target = event.target.closest("[data-id]");
+      if (!target) return;
+      const item = allItems.find((entry) => entry.id === target.dataset.id);
+      openSheet(item);
+    });
+
+    searchToggle.addEventListener("click", () => {
+      const open = searchBox.classList.toggle("open");
+      searchToggle.classList.toggle("active", open);
+      if (open) {
+        searchInput.focus();
+      } else {
+        searchQuery = "";
+        searchInput.value = "";
+        searchClear.classList.remove("show");
+        paint();
+      }
+    });
+
+    searchInput.addEventListener("input", () => {
+      searchQuery = searchInput.value;
+      searchClear.classList.toggle("show", Boolean(searchQuery));
+      paint();
+    });
+
+    searchClear.addEventListener("click", () => {
+      searchQuery = "";
+      searchInput.value = "";
+      searchClear.classList.remove("show");
+      searchInput.focus();
+      paint();
+    });
+
+    document.getElementById("sheetClose").addEventListener("click", closeSheet);
+    sheetBackdrop.addEventListener("click", closeSheet);
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeSheet();
+    });
 
     document.querySelectorAll(".nav-item").forEach((btn) => {
       btn.addEventListener("click", () => {
