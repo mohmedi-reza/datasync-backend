@@ -4,11 +4,12 @@ import { sortNewestFirst } from "./sort.js";
 /**
  * In-memory store. Lost on process restart / Vercel redeploy.
  * Prefer RedisStore in production.
+ * No message cap — grows without app-level limit.
  */
 export class MessageStore {
-  constructor({ maxMessages = 1000 } = {}) {
+  constructor() {
     this.kind = "memory";
-    this.maxMessages = maxMessages;
+    this.maxMessages = null;
     this.messages = [];
     this.version = 0;
   }
@@ -33,23 +34,19 @@ export class MessageStore {
     };
 
     this.messages.unshift(record);
-
-    if (this.messages.length > this.maxMessages) {
-      this.messages.length = this.maxMessages;
-    }
-
     this.#bump();
     return record;
   }
 
-  async list({ limit = 50, messageType } = {}) {
+  async list({ limit, messageType } = {}) {
     let items = sortNewestFirst(this.messages);
 
     if (messageType) {
       items = items.filter((m) => m.messageType === messageType);
     }
 
-    return items.slice(0, Math.min(Math.max(limit, 1), this.maxMessages));
+    if (limit == null || limit <= 0) return items;
+    return items.slice(0, limit);
   }
 
   async getById(id) {
@@ -71,7 +68,7 @@ export class MessageStore {
 
     return {
       total: this.messages.length,
-      maxMessages: this.maxMessages,
+      maxMessages: null,
       byType,
       latestReceivedAt: this.messages[0]?.receivedAt ?? null,
       storage: this.kind,

@@ -14,10 +14,9 @@ const dashboardHtml = readFileSync(join(__dirname, "views", "dashboard.html"), "
 
 const PORT = Number.parseInt(process.env.PORT || "3000", 10);
 const AUTH_TOKEN = process.env.AUTH_TOKEN || "";
-const MAX_MESSAGES = Number.parseInt(process.env.MAX_MESSAGES || "1000", 10) || 1000;
 
 const app = express();
-const store = createStoreFromEnv({ maxMessages: MAX_MESSAGES }) ?? new MessageStore({ maxMessages: MAX_MESSAGES });
+const store = createStoreFromEnv() ?? new MessageStore();
 const requireAuth = createAuthMiddleware(AUTH_TOKEN);
 
 app.disable("x-powered-by");

@@ -11,5 +11,3 @@ services:
         value: production
       - key: AUTH_TOKEN
         generateValue: true
-      - key: MAX_MESSAGES
-        value: "1000"

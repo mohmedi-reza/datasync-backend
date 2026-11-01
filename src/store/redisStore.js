@@ -9,11 +9,12 @@ const VERSION_KEY = "datasync:version";
 /**
  * Durable store via Upstash Redis.
  * Uses a Redis LIST (LPUSH) so insert order stays newest-first.
+ * No app-level message cap.
  */
 export class RedisStore {
-  constructor({ maxMessages = 1000, url, token } = {}) {
+  constructor({ url, token } = {}) {
     this.kind = "redis";
-    this.maxMessages = maxMessages;
+    this.maxMessages = null;
     this.redis = new Redis({ url, token });
     this._migrated = false;
   }
@@ -52,17 +53,15 @@ export class RedisStore {
     if (!legacy.length) return;
 
     const ordered = sortNewestFirst(legacy);
-    // LPUSH in reverse so oldest ends up at the tail
     for (let i = ordered.length - 1; i >= 0; i -= 1) {
       await this.redis.lpush(LIST_KEY, ordered[i]);
     }
-    await this.redis.ltrim(LIST_KEY, 0, this.maxMessages - 1);
     await this.redis.del(LEGACY_KEY);
   }
 
   async #readAll() {
     await this.#migrateLegacyIfNeeded();
-    const items = await this.redis.lrange(LIST_KEY, 0, this.maxMessages - 1);
+    const items = await this.redis.lrange(LIST_KEY, 0, -1);
     const normalized = (items || []).map((item) => {
       if (item && typeof item === "object") return item;
       if (typeof item === "string") {
@@ -90,21 +89,20 @@ export class RedisStore {
       receivedAt: Date.now(),
     };
 
-    // Atomic newest-first insert
     await this.redis.lpush(LIST_KEY, record);
-    await this.redis.ltrim(LIST_KEY, 0, this.maxMessages - 1);
     await this.#bump();
     return record;
   }
 
-  async list({ limit = 50, messageType } = {}) {
+  async list({ limit, messageType } = {}) {
     let items = await this.#readAll();
 
     if (messageType) {
       items = items.filter((m) => m.messageType === messageType);
     }
 
-    return items.slice(0, Math.min(Math.max(limit, 1), this.maxMessages));
+    if (limit == null || limit <= 0) return items;
+    return items.slice(0, limit);
   }
 
   async getById(id) {
@@ -130,7 +128,7 @@ export class RedisStore {
 
     return {
       total: messages.length,
-      maxMessages: this.maxMessages,
+      maxMessages: null,
       byType,
       latestReceivedAt: messages[0]?.receivedAt ?? null,
       storage: this.kind,
@@ -139,12 +137,12 @@ export class RedisStore {
   }
 }
 
-export function createStoreFromEnv({ maxMessages = 1000 } = {}) {
+export function createStoreFromEnv() {
   const url = (process.env.UPSTASH_REDIS_REST_URL || "").trim();
   const token = (process.env.UPSTASH_REDIS_REST_TOKEN || "").trim();
 
   if (url && token) {
-    return new RedisStore({ maxMessages, url, token });
+    return new RedisStore({ url, token });
   }
 
   return null;

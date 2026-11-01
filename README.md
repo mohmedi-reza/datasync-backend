@@ -72,7 +72,6 @@ Server defaults to `http://localhost:3000`.
    - **Start command:** `npm start`
 5. Environment variables:
    - `AUTH_TOKEN` = a random secret (recommended)
-   - `MAX_MESSAGES` = `1000` (optional)
 6. Deploy, then copy the public URL into the Android app.
 
 Or use Blueprint: Render → New → Blueprint → select this repo (`render.yaml`).

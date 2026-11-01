@@ -60,12 +60,20 @@ export function createSyncRouter(store) {
   });
 
   router.get("/messages", async (req, res) => {
-    const defaultLimit = store.maxMessages || 1000;
-    const limit = Number.parseInt(String(req.query.limit ?? defaultLimit), 10) || defaultLimit;
+    // No default cap — return everything unless ?limit= is explicitly set
+    const rawLimit = req.query.limit;
+    const limit =
+      rawLimit === undefined || rawLimit === ""
+        ? null
+        : Number.parseInt(String(rawLimit), 10);
+
     const messageType =
       typeof req.query.messageType === "string" ? req.query.messageType : undefined;
 
-    const items = await store.list({ limit, messageType });
+    const items = await store.list({
+      limit: Number.isFinite(limit) && limit > 0 ? limit : null,
+      messageType,
+    });
     return res.json({
       ok: true,
       count: items.length,
