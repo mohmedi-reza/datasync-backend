@@ -51,6 +51,16 @@ export function createSyncRouter(store) {
       timestamp: req.body.timestamp,
     });
 
+    if (record?.duplicate) {
+      return res.status(200).json({
+        ok: true,
+        duplicate: true,
+        id: record.id,
+        receivedAt: record.receivedAt,
+        message: "Duplicate ignored",
+      });
+    }
+
     return res.status(201).json({
       ok: true,
       id: record.id,
@@ -145,6 +155,14 @@ export function createSyncRouter(store) {
   router.delete("/messages", async (_req, res) => {
     const removed = await store.clear();
     return res.json({ ok: true, removed, version: await store.getVersion() });
+  });
+
+  router.post("/messages/dedupe", async (_req, res) => {
+    if (typeof store.dedupe !== "function") {
+      return res.status(501).json({ ok: false, error: "Dedupe not supported" });
+    }
+    const result = await store.dedupe();
+    return res.json({ ok: true, ...result, version: await store.getVersion() });
   });
 
   return router;

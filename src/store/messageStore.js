@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { dedupeByFingerprint, messageFingerprint } from "./fingerprint.js";
 import { sortNewestFirst } from "./sort.js";
 
 /**
@@ -12,6 +13,7 @@ export class MessageStore {
     this.maxMessages = null;
     this.messages = [];
     this.version = 0;
+    this._fingerprints = new Set();
   }
 
   async getVersion() {
@@ -24,6 +26,12 @@ export class MessageStore {
   }
 
   async add(payload) {
+    const fp = messageFingerprint(payload);
+    if (this._fingerprints.has(fp)) {
+      const existing = this.messages.find((m) => messageFingerprint(m) === fp);
+      return { ...(existing || {}), duplicate: true };
+    }
+
     const record = {
       id: randomUUID(),
       messageType: payload.messageType,
@@ -34,6 +42,7 @@ export class MessageStore {
     };
 
     this.messages.unshift(record);
+    this._fingerprints.add(fp);
     this.#bump();
     return record;
   }
@@ -59,13 +68,26 @@ export class MessageStore {
     const before = this.messages.length;
     this.messages = this.messages.filter((m) => !idSet.has(String(m.id)));
     const removed = before - this.messages.length;
-    if (removed > 0) this.#bump();
+    if (removed > 0) {
+      this._fingerprints = new Set(this.messages.map((m) => messageFingerprint(m)));
+      this.#bump();
+    }
     return removed;
+  }
+
+  async dedupe() {
+    const before = this.messages.length;
+    this.messages = sortNewestFirst(dedupeByFingerprint(this.messages));
+    this._fingerprints = new Set(this.messages.map((m) => messageFingerprint(m)));
+    const removed = before - this.messages.length;
+    if (removed > 0) this.#bump();
+    return { before, after: this.messages.length, removed };
   }
 
   async clear() {
     const removed = this.messages.length;
     this.messages = [];
+    this._fingerprints = new Set();
     this.#bump();
     return removed;
   }

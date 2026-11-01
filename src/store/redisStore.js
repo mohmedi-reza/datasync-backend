@@ -1,15 +1,17 @@
 import { randomUUID } from "node:crypto";
 import { Redis } from "@upstash/redis";
+import { dedupeByFingerprint, messageFingerprint } from "./fingerprint.js";
 import { sortNewestFirst } from "./sort.js";
 
 const LEGACY_KEY = "datasync:messages";
 const LIST_KEY = "datasync:messages:list";
 const VERSION_KEY = "datasync:version";
+const FP_KEY = "datasync:fingerprints";
 
 /**
  * Durable store via Upstash Redis.
  * Uses a Redis LIST (LPUSH) so insert order stays newest-first.
- * No app-level message cap.
+ * Soft-dedupes by type+sender+content so re-synced notifications don't pile up.
  */
 export class RedisStore {
   constructor({ url, token } = {}) {
@@ -53,9 +55,7 @@ export class RedisStore {
     if (!legacy.length) return;
 
     const ordered = sortNewestFirst(legacy);
-    for (let i = ordered.length - 1; i >= 0; i -= 1) {
-      await this.redis.lpush(LIST_KEY, ordered[i]);
-    }
+    await this.#writeList(LIST_KEY, ordered);
     await this.redis.del(LEGACY_KEY);
   }
 
@@ -77,8 +77,74 @@ export class RedisStore {
     return sortNewestFirst(normalized);
   }
 
+  async #writeList(key, messages) {
+    await this.redis.del(key);
+    if (!messages.length) return;
+
+    // Batch LPUSH via pipeline to avoid rate-limit mid-write loss.
+    const chunkSize = 50;
+    for (let start = messages.length - 1; start >= 0; start -= chunkSize) {
+      const end = Math.max(-1, start - chunkSize);
+      const pipe = this.redis.pipeline();
+      for (let i = start; i > end; i -= 1) {
+        pipe.lpush(key, messages[i]);
+      }
+      await pipe.exec();
+    }
+  }
+
+  async #replaceList(messages) {
+    const tempKey = `${LIST_KEY}:tmp`;
+    await this.#writeList(tempKey, messages);
+    // Atomic swap — old list stays intact until temp is fully written.
+    await this.redis.rename(tempKey, LIST_KEY);
+
+    await this.redis.del(FP_KEY);
+    if (!messages.length) return;
+
+    const fps = messages.map((m) => messageFingerprint(m));
+    const chunkSize = 100;
+    for (let i = 0; i < fps.length; i += chunkSize) {
+      await this.redis.sadd(FP_KEY, ...fps.slice(i, i + chunkSize));
+    }
+  }
+
+  async #ensureFingerprintIndex(messages) {
+    const size = await this.redis.scard(FP_KEY);
+    if (size > 0) return;
+    if (!messages.length) return;
+    const fps = messages.map((m) => messageFingerprint(m));
+    const chunkSize = 100;
+    for (let i = 0; i < fps.length; i += chunkSize) {
+      await this.redis.sadd(FP_KEY, ...fps.slice(i, i + chunkSize));
+    }
+  }
+
   async add(payload) {
     await this.#migrateLegacyIfNeeded();
+    const fp = messageFingerprint(payload);
+
+    let known = await this.redis.sismember(FP_KEY, fp);
+    if (!known) {
+      const messages = await this.#readAll();
+      await this.#ensureFingerprintIndex(messages);
+      known = await this.redis.sismember(FP_KEY, fp);
+      if (known) {
+        const existing = messages.find((m) => messageFingerprint(m) === fp);
+        if (existing) return { ...existing, duplicate: true };
+      } else {
+        const existing = messages.find((m) => messageFingerprint(m) === fp);
+        if (existing) {
+          await this.redis.sadd(FP_KEY, fp);
+          return { ...existing, duplicate: true };
+        }
+      }
+    } else {
+      const messages = await this.#readAll();
+      const existing = messages.find((m) => messageFingerprint(m) === fp);
+      if (existing) return { ...existing, duplicate: true };
+      // Stale fingerprint entry — allow insert.
+    }
 
     const record = {
       id: randomUUID(),
@@ -90,6 +156,7 @@ export class RedisStore {
     };
 
     await this.redis.lpush(LIST_KEY, record);
+    await this.redis.sadd(FP_KEY, fp);
     await this.#bump();
     return record;
   }
@@ -119,15 +186,23 @@ export class RedisStore {
     const removed = messages.length - kept.length;
     if (!removed) return 0;
 
-    await this.redis.del(LIST_KEY);
-    if (kept.length) {
-      // LPUSH oldest first so newest ends at head
-      for (let i = kept.length - 1; i >= 0; i -= 1) {
-        await this.redis.lpush(LIST_KEY, kept[i]);
-      }
-    }
+    await this.#replaceList(kept);
     await this.#bump();
     return removed;
+  }
+
+  async dedupe() {
+    const messages = await this.#readAll();
+    const before = messages.length;
+    const unique = sortNewestFirst(dedupeByFingerprint(messages));
+    const removed = before - unique.length;
+    if (!removed) {
+      await this.#ensureFingerprintIndex(unique);
+      return { before, after: unique.length, removed: 0 };
+    }
+    await this.#replaceList(unique);
+    await this.#bump();
+    return { before, after: unique.length, removed };
   }
 
   async clear() {
@@ -135,6 +210,8 @@ export class RedisStore {
     const removed = await this.redis.llen(LIST_KEY);
     await this.redis.del(LIST_KEY);
     await this.redis.del(LEGACY_KEY);
+    await this.redis.del(FP_KEY);
+    await this.redis.del(`${LIST_KEY}:tmp`);
     await this.#bump();
     return removed || 0;
   }
