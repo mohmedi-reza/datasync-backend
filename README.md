@@ -77,8 +77,21 @@ Server defaults to `http://localhost:3000`.
 
 Or use Blueprint: Render → New → Blueprint → select this repo (`render.yaml`).
 
+## Persistent storage (important)
+
+By default messages live in **RAM**. Every Vercel/Render **rebuild/redeploy** restarts the process, so the inbox looks empty again.
+
+To keep data across builds, add a free [Upstash Redis](https://upstash.com) database and set these env vars in Vercel → Project → Settings → Environment Variables:
+
+```bash
+UPSTASH_REDIS_REST_URL=...
+UPSTASH_REDIS_REST_TOKEN=...
+```
+
+Then redeploy. `/health` should show `"storage":"redis"`.
+
 ## Notes
 
 - Free Render web services **sleep** after idle time; the first request after sleep can be slow.
-- Storage is **in-memory**. Messages are lost when the service restarts or wakes from sleep. Fine for testing; add Postgres later if you need durability.
+- Without Upstash, storage is **in-memory** and is wiped on every deploy.
 - If `AUTH_TOKEN` is empty, auth is disabled. Keep it set in production.

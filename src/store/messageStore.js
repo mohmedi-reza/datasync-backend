@@ -1,17 +1,17 @@
 import { randomUUID } from "node:crypto";
 
 /**
- * Simple in-memory store.
- * On Render free tier the filesystem is ephemeral, so memory is the
- * reliable default. Messages are lost when the service sleeps/restarts.
+ * In-memory store. Lost on process restart / Vercel redeploy.
+ * Prefer RedisStore in production.
  */
 export class MessageStore {
   constructor({ maxMessages = 1000 } = {}) {
+    this.kind = "memory";
     this.maxMessages = maxMessages;
     this.messages = [];
   }
 
-  add(payload) {
+  async add(payload) {
     const record = {
       id: randomUUID(),
       messageType: payload.messageType,
@@ -30,7 +30,7 @@ export class MessageStore {
     return record;
   }
 
-  list({ limit = 50, messageType } = {}) {
+  async list({ limit = 50, messageType } = {}) {
     let items = this.messages;
 
     if (messageType) {
@@ -40,17 +40,17 @@ export class MessageStore {
     return items.slice(0, Math.min(Math.max(limit, 1), 500));
   }
 
-  getById(id) {
+  async getById(id) {
     return this.messages.find((m) => m.id === id) ?? null;
   }
 
-  clear() {
+  async clear() {
     const removed = this.messages.length;
     this.messages = [];
     return removed;
   }
 
-  stats() {
+  async stats() {
     const byType = {};
     for (const message of this.messages) {
       byType[message.messageType] = (byType[message.messageType] ?? 0) + 1;
@@ -61,6 +61,7 @@ export class MessageStore {
       maxMessages: this.maxMessages,
       byType,
       latestReceivedAt: this.messages[0]?.receivedAt ?? null,
+      storage: this.kind,
     };
   }
 }

@@ -7,6 +7,7 @@ import { fileURLToPath } from "node:url";
 import { createAuthMiddleware } from "./middleware/auth.js";
 import { createSyncRouter } from "./routes/sync.js";
 import { MessageStore } from "./store/messageStore.js";
+import { createStoreFromEnv } from "./store/redisStore.js";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const dashboardHtml = readFileSync(join(__dirname, "views", "dashboard.html"), "utf8");
@@ -16,7 +17,7 @@ const AUTH_TOKEN = process.env.AUTH_TOKEN || "";
 const MAX_MESSAGES = Number.parseInt(process.env.MAX_MESSAGES || "1000", 10) || 1000;
 
 const app = express();
-const store = new MessageStore({ maxMessages: MAX_MESSAGES });
+const store = createStoreFromEnv({ maxMessages: MAX_MESSAGES }) ?? new MessageStore({ maxMessages: MAX_MESSAGES });
 const requireAuth = createAuthMiddleware(AUTH_TOKEN);
 
 app.disable("x-powered-by");
@@ -32,6 +33,7 @@ app.get("/health", (_req, res) => {
     ok: true,
     service: "datasync-backend",
     authRequired: Boolean(AUTH_TOKEN.trim()),
+    storage: store.kind,
     uptimeSec: Math.round(process.uptime()),
   });
 });
@@ -57,5 +59,6 @@ app.use((_req, res) => {
 
 app.listen(PORT, () => {
   console.log(`DataSync backend listening on port ${PORT}`);
+  console.log(`Storage: ${store.kind}`);
   console.log(`Auth required: ${Boolean(AUTH_TOKEN.trim())}`);
 });

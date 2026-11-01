@@ -34,23 +34,13 @@ function validatePayload(body) {
 export function createSyncRouter(store) {
   const router = Router();
 
-  /**
-   * Main endpoint used by the Android app (SyncApiService.sendPayload).
-   * POST JSON:
-   * {
-   *   "messageType": "SMS" | "DATA_SYNC" | ...,
-   *   "sender": "+1555...",
-   *   "content": "...",
-   *   "timestamp": 1710000000000
-   * }
-   */
-  router.post("/", (req, res) => {
+  router.post("/", async (req, res) => {
     const error = validatePayload(req.body);
     if (error) {
       return res.status(400).json({ ok: false, error: "Bad Request", message: error });
     }
 
-    const record = store.add({
+    const record = await store.add({
       messageType: req.body.messageType.trim(),
       sender: req.body.sender.trim(),
       content: req.body.content.trim(),
@@ -65,12 +55,12 @@ export function createSyncRouter(store) {
     });
   });
 
-  router.get("/messages", (req, res) => {
+  router.get("/messages", async (req, res) => {
     const limit = Number.parseInt(String(req.query.limit ?? "50"), 10) || 50;
     const messageType =
       typeof req.query.messageType === "string" ? req.query.messageType : undefined;
 
-    const items = store.list({ limit, messageType });
+    const items = await store.list({ limit, messageType });
     return res.json({
       ok: true,
       count: items.length,
@@ -78,20 +68,20 @@ export function createSyncRouter(store) {
     });
   });
 
-  router.get("/messages/:id", (req, res) => {
-    const item = store.getById(req.params.id);
+  router.get("/messages/:id", async (req, res) => {
+    const item = await store.getById(req.params.id);
     if (!item) {
       return res.status(404).json({ ok: false, error: "Not Found" });
     }
     return res.json({ ok: true, item });
   });
 
-  router.get("/stats", (_req, res) => {
-    return res.json({ ok: true, ...store.stats() });
+  router.get("/stats", async (_req, res) => {
+    return res.json({ ok: true, ...(await store.stats()) });
   });
 
-  router.delete("/messages", (_req, res) => {
-    const removed = store.clear();
+  router.delete("/messages", async (_req, res) => {
+    const removed = await store.clear();
     return res.json({ ok: true, removed });
   });
 
