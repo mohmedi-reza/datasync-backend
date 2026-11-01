@@ -546,11 +546,19 @@
 
     function sortNewestFirst(items) {
       return [...items].sort((a, b) => {
-        const aTime = Number(a?.receivedAt ?? a?.timestamp ?? 0);
-        const bTime = Number(b?.receivedAt ?? b?.timestamp ?? 0);
+        // Prefer original phone/event time so re-synced old alerts don't jump to top
+        const aTime = Number(a?.timestamp ?? a?.receivedAt ?? 0);
+        const bTime = Number(b?.timestamp ?? b?.receivedAt ?? 0);
         if (bTime !== aTime) return bTime - aTime;
+        const aRecv = Number(a?.receivedAt ?? 0);
+        const bRecv = Number(b?.receivedAt ?? 0);
+        if (bRecv !== aRecv) return bRecv - aRecv;
         return String(b?.id ?? "").localeCompare(String(a?.id ?? ""));
       });
+    }
+
+    function eventTime(item) {
+      return item?.timestamp || item?.receivedAt || 0;
     }
 
     const callIcons = {
@@ -578,7 +586,7 @@
           <div class="msg-main">
             <div class="msg-top">
               <p class="sender">${escapeHtml(item.sender)}</p>
-              <time class="when">${escapeHtml(formatWhen(item.receivedAt || item.timestamp))}</time>
+              <time class="when">${escapeHtml(formatWhen(eventTime(item)))}</time>
             </div>
             <p class="bubble ${rtl}">${escapeHtml(item.content)}</p>
           </div>
@@ -595,7 +603,7 @@
             <p class="notif-app">${escapeHtml(socialLabel(type))}</p>
             <p class="notif-title">${escapeHtml(item.sender)}</p>
             <p class="notif-text ${rtl}">${escapeHtml(item.content)}</p>
-            <div class="notif-meta">${escapeHtml(formatWhen(item.receivedAt || item.timestamp))}</div>
+            <div class="notif-meta">${escapeHtml(formatWhen(eventTime(item)))}</div>
           </div>
         </article>`;
     }
@@ -613,7 +621,7 @@
             <p class="call-name">${escapeHtml(item.sender)}</p>
             <p class="call-sub ${kindClass === "missed" ? "missed" : ""}">${escapeHtml(sub)}</p>
           </div>
-          <time class="call-time">${escapeHtml(formatWhen(item.receivedAt || item.timestamp))}</time>
+          <time class="call-time">${escapeHtml(formatWhen(eventTime(item)))}</time>
         </article>`;
     }
 
