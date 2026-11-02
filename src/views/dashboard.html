@@ -371,29 +371,70 @@
       flex-direction: column;
       gap: 10px;
     }
+    .chat-thread > .swipe > .swipe-front {
+      /* Must stay opaque so the red swipe-delete layer never bleeds through */
+      background: var(--surface);
+      display: flex;
+      width: 100%;
+    }
+    .chat-thread > .swipe:has(.msg-block.out) > .swipe-front {
+      justify-content: flex-end;
+    }
+    .chat-thread > .swipe:has(.msg-block.out) > .swipe-actions {
+      inset: 0 0 0 auto;
+    }
     .msg-block {
       display: flex;
       flex-direction: column;
       align-items: flex-start;
       gap: 5px;
-      max-width: 88%;
+      max-width: min(82%, calc(100% - 4px));
+      min-width: 0;
       cursor: pointer;
       user-select: none;
       animation: fadeIn 0.28s ease both;
     }
+    .msg-block.out {
+      align-items: flex-end;
+      margin-inline-start: auto;
+    }
     .msg-block.selected .bubble { outline: 2px solid var(--blue); }
+    .msg-block.out.selected .bubble { outline-color: #1d4ed8; }
     .msg-meta {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       padding-inline: 4px;
+      max-width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
     }
-    .msg-meta .at { font-size: 0.72rem; color: var(--muted); font-weight: 500; }
+    .msg-block.out .msg-meta { flex-direction: row-reverse; }
+    .msg-meta .at {
+      font-size: 0.72rem;
+      color: var(--muted);
+      font-weight: 500;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      min-width: 0;
+    }
+    .msg-meta .side {
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      color: var(--muted);
+      flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .msg-block.out .msg-meta .side { color: var(--blue); }
     .bubble {
       margin: 0;
       padding: 12px 14px;
       border-radius: 4px 18px 18px 18px;
       background: #f1f4f9;
+      color: var(--ink);
       font-family: "Vazirmatn", "Plus Jakarta Sans", sans-serif;
       font-size: 0.92rem;
       font-weight: 500;
@@ -402,6 +443,14 @@
       word-break: break-word;
     }
     .bubble.rtl { direction: rtl; text-align: right; border-radius: 18px 4px 18px 18px; }
+    .msg-block.out .bubble {
+      background: var(--blue);
+      color: #fff;
+      border-radius: 18px 4px 18px 18px;
+    }
+    .msg-block.out .bubble.rtl {
+      border-radius: 4px 18px 18px 18px;
+    }
     .bubble.clamp {
       display: -webkit-box;
       -webkit-line-clamp: 4;
@@ -843,6 +892,14 @@
       return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]/.test(String(text || ""));
     }
 
+    function isOutgoingSms(item) {
+      return /^\[Out\]\s*/i.test(String(item?.content || ""));
+    }
+
+    function displayContent(item) {
+      return String(item?.content || "").replace(/^\[Out\]\s*/i, "");
+    }
+
     function initials(value) {
       const text = String(value || "?").trim();
       if (!text) return "?";
@@ -957,8 +1014,53 @@
       return `<div class="check">${on ? checkIcon : ""}</div>`;
     }
 
+    function toAsciiDigits(value) {
+      return String(value || "")
+        .replace(/[۰-۹]/g, (d) => String("۰۱۲۳۴۵۶۷۸۹".indexOf(d)))
+        .replace(/[٠-٩]/g, (d) => String("٠١٢٣٤٥٦٧٨٩".indexOf(d)));
+    }
+
+    /** Same person: 0916… / +98916… / 98916… → one key */
+    function normalizeSenderKey(raw) {
+      const original = String(raw || "").trim() || "Unknown";
+      const ascii = toAsciiDigits(original);
+      const digits = ascii.replace(/\D/g, "");
+      if (digits.length < 8) return original;
+
+      let national = digits;
+      if (national.startsWith("0098")) national = national.slice(4);
+      else if (national.startsWith("98") && national.length >= 12) national = national.slice(2);
+      else if (national.startsWith("0") && national.length >= 10) national = national.slice(1);
+
+      if (/^9\d{9}$/.test(national)) return `ir:${national}`;
+      if (national.length >= 10) return `tel:${national.slice(-10)}`;
+      return original;
+    }
+
     function conversationKey(item) {
-      return String(item.sender || "Unknown").trim() || "Unknown";
+      return normalizeSenderKey(item?.sender);
+    }
+
+    function pickDisplaySender(messages) {
+      const senders = messages
+        .map((m) => String(m?.sender || "").trim())
+        .filter(Boolean);
+      if (!senders.length) return "Unknown";
+      const scored = senders.map((s) => {
+        const d = toAsciiDigits(s).replace(/\D/g, "");
+        let score = 0;
+        if (/^\+98/.test(toAsciiDigits(s).trim())) score = 3;
+        else if (/^0\d{10}$/.test(d)) score = 2;
+        else if (/^9\d{9}$/.test(d) || /^98\d{10}$/.test(d)) score = 1;
+        return { s, score };
+      });
+      scored.sort((a, b) => b.score - a.score);
+      return scored[0].s;
+    }
+
+    function displayNameForKey(key) {
+      const messages = allItems.filter((item) => conversationKey(item) === key);
+      return pickDisplaySender(messages);
     }
 
     function softKey(item) {
@@ -991,11 +1093,12 @@
         map.get(key).push(item);
       }
       return [...map.entries()]
-        .map(([sender, messages]) => {
+        .map(([key, messages]) => {
           const sorted = sortNewestFirst(messages);
           const unread = sorted.filter(isUnread).length;
           return {
-            sender,
+            key,
+            sender: pickDisplaySender(sorted),
             messages: sorted,
             latest: sorted[0],
             ids: sorted.map((m) => m.id),
@@ -1009,10 +1112,12 @@
     function renderConversation(conv, kind) {
       const latest = conv.latest;
       const type = normalizeType(latest.messageType);
-      const rtl = isRtl(latest.content) ? "rtl" : "";
+      const body = displayContent(latest);
+      const rtl = isRtl(body) ? "rtl" : "";
       const selected = conv.ids.some((id) => selectedIds.has(id)) ? "selected" : "";
       const unreadCls = conv.unread > 0 ? "unread" : "";
       const selectKey = conv.ids[0];
+      const previewPrefix = isOutgoingSms(latest) ? "You: " : "";
 
       let avatarHtml = "";
       if (kind === "sms") {
@@ -1028,12 +1133,12 @@
       }
 
       const html = `
-        <article class="row ${selected} ${unreadCls}" data-conversation="${escapeHtml(conv.sender)}" data-id="${escapeHtml(selectKey)}" data-ids="${escapeHtml(conv.ids.join(","))}">
+        <article class="row ${selected} ${unreadCls}" data-conversation="${escapeHtml(conv.key)}" data-id="${escapeHtml(selectKey)}" data-ids="${escapeHtml(conv.ids.join(","))}">
           ${checkHtml(selectKey)}
           ${avatarHtml}
           <div class="row-main" data-open="conversation">
             <div class="row-top"><p class="name">${escapeHtml(conv.sender)}</p></div>
-            <p class="preview ${rtl}">${escapeHtml(latest.content || "")}</p>
+            <p class="preview ${rtl}">${escapeHtml(previewPrefix + body)}</p>
           </div>
           <div class="meta-col" data-open="conversation">
             <span class="when">${escapeHtml(formatWhen(eventTime(latest)))}</span>
@@ -1044,15 +1149,20 @@
     }
 
     function renderThreadMessage(item) {
-      const rtl = isRtl(item.content) ? "rtl" : "";
+      const outgoing = isOutgoingSms(item);
+      const body = displayContent(item);
+      const rtl = isRtl(body) ? "rtl" : "";
       const selected = selectedIds.has(item.id) ? "selected" : "";
+      const side = outgoing ? "out" : "in";
+      const sideLabel = outgoing ? "Sent" : "Received";
       const html = `
-        <article class="msg-block ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}">
+        <article class="msg-block ${side} ${selected}" data-id="${escapeHtml(item.id)}" data-sender="${escapeHtml(item.sender || "")}" data-side="${side}">
           <div class="msg-meta">
             ${selecting ? checkHtml(item.id) : ""}
-            <span class="at">${escapeHtml(formatExact(eventTime(item)))}</span>
+            <span class="side">${sideLabel}</span>
+            <span class="at">${escapeHtml(formatClock(eventTime(item)))}</span>
           </div>
-          <p class="bubble ${rtl}" data-open="message">${escapeHtml(item.content)}</p>
+          <p class="bubble ${rtl}" data-open="message">${escapeHtml(body)}</p>
         </article>`;
       return selecting ? html : wrapSwipe(html, item.id);
     }
@@ -1173,7 +1283,7 @@
       app.classList.toggle("in-chat", inChat);
       backBtn.classList.toggle("show", inChat);
       pageTitle.classList.toggle("chat-title", inChat);
-      pageTitle.textContent = inChat ? openConversation : TABS[activeTab].title;
+      pageTitle.textContent = inChat ? displayNameForKey(openConversation) : TABS[activeTab].title;
       searchToggle.style.display = inChat ? "none" : "";
       if (inChat && searchBox.classList.contains("open")) {
         searchBox.classList.remove("open");
@@ -1280,17 +1390,22 @@
     function openMessageSheet(item) {
       if (!item) return;
       const typeLabel = typeLabelFor(item);
-      const rtl = isRtl(item.content) ? "rtl" : "";
+      const body = displayContent(item);
+      const outgoing = isOutgoingSms(item);
+      const rtl = isRtl(body) ? "rtl" : "";
+      const direction = outgoing ? "Outgoing (Sent)" : "Incoming (Received)";
+      const fromLabel = outgoing ? "To" : "From";
 
       fillAvatar(document.getElementById("sheetAvatar"), item);
       document.getElementById("sheetTitle").textContent = item.sender || "Unknown";
       document.getElementById("sheetSubtitle").textContent =
-        typeLabel + " · " + formatWhen(eventTime(item));
+        typeLabel + " · " + direction + " · " + formatWhen(eventTime(item));
 
       sheetBody.innerHTML = `
-        <div class="sheet-bubble ${rtl}">${escapeHtml(item.content || "")}</div>
+        <div class="sheet-bubble ${rtl}">${escapeHtml(body)}</div>
         <div class="sheet-meta">
-          <div class="sheet-meta-row"><span>From</span><strong>${escapeHtml(item.sender || "—")}</strong></div>
+          <div class="sheet-meta-row"><span>${fromLabel}</span><strong>${escapeHtml(item.sender || "—")}</strong></div>
+          <div class="sheet-meta-row"><span>Direction</span><strong>${escapeHtml(direction)}</strong></div>
           <div class="sheet-meta-row"><span>Type</span><strong>${escapeHtml(typeLabel)}</strong></div>
           <div class="sheet-meta-row"><span>Time</span><strong>${escapeHtml(formatExact(eventTime(item)))}</strong></div>
         </div>`;
@@ -1299,14 +1414,16 @@
       if (isUnread(item)) markIdsRead([item.id]);
     }
 
-    function openContactSheet(sender) {
+    function openContactSheet(senderOrKey) {
+      const key = normalizeSenderKey(senderOrKey);
       const messages = sortNewestFirst(
         dedupeItems(
-          allItems.filter((item) => String(item.sender || "") === String(sender || ""))
+          allItems.filter((item) => conversationKey(item) === key)
         )
       );
       if (!messages.length) return;
       const latest = messages[0];
+      const display = pickDisplaySender(messages);
 
       const byType = {};
       for (const m of messages) {
@@ -1318,24 +1435,26 @@
         .join(" · ");
 
       fillAvatar(document.getElementById("sheetAvatar"), latest);
-      document.getElementById("sheetTitle").textContent = sender || "Unknown";
+      document.getElementById("sheetTitle").textContent = display;
       document.getElementById("sheetSubtitle").textContent =
         `${messages.length} item${messages.length === 1 ? "" : "s"} · ${typeSummary}`;
 
       sheetBody.innerHTML = `
         <div class="sheet-meta">
-          <div class="sheet-meta-row"><span>Contact</span><strong>${escapeHtml(sender || "—")}</strong></div>
+          <div class="sheet-meta-row"><span>Contact</span><strong>${escapeHtml(display)}</strong></div>
           <div class="sheet-meta-row"><span>Last seen</span><strong>${escapeHtml(formatExact(eventTime(latest)))}</strong></div>
           <div class="sheet-meta-row"><span>Total</span><strong>${messages.length}</strong></div>
         </div>
         <p class="sheet-section-title">Recent</p>
         <div class="sheet-list">
           ${messages.slice(0, 8).map((m) => {
-            const rtl = isRtl(m.content) ? "rtl" : "";
+            const body = displayContent(m);
+            const rtl = isRtl(body) ? "rtl" : "";
+            const dir = isOutgoingSms(m) ? "Sent" : "Received";
             return `
               <div class="sheet-list-item">
-                <span class="when">${escapeHtml(formatWhen(eventTime(m)))} · ${escapeHtml(typeLabelFor(m))}</span>
-                <span class="text ${rtl}">${escapeHtml(m.content || "")}</span>
+                <span class="when">${escapeHtml(formatWhen(eventTime(m)))} · ${escapeHtml(typeLabelFor(m))} · ${dir}</span>
+                <span class="text ${rtl}">${escapeHtml(body)}</span>
               </div>`;
           }).join("")}
         </div>`;
@@ -1429,6 +1548,9 @@
         if (!front || front.dataset.bound) return;
         front.dataset.bound = "1";
 
+        const outgoing = Boolean(front.querySelector(".msg-block.out"));
+        const openX = outgoing ? -76 : 76;
+
         let startX = 0;
         let startY = 0;
         let currentX = 0;
@@ -1452,12 +1574,13 @@
           if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 8) {
             dragging = false;
             front.style.transition = "transform 0.18s ease";
-            front.style.transform = opened ? "translateX(76px)" : "translateX(0)";
+            front.style.transform = opened ? `translateX(${openX}px)` : "translateX(0)";
             return;
           }
-          if (dx > 0) {
+          const toward = outgoing ? dx < 0 : dx > 0;
+          if (toward) {
             event.preventDefault?.();
-            currentX = Math.min(76, dx);
+            currentX = outgoing ? Math.max(-76, dx) : Math.min(76, dx);
             front.style.transform = `translateX(${currentX}px)`;
           }
         };
@@ -1466,8 +1589,8 @@
           if (!dragging) return;
           dragging = false;
           front.style.transition = "transform 0.18s ease";
-          opened = currentX > 38;
-          front.style.transform = opened ? "translateX(76px)" : "translateX(0)";
+          opened = Math.abs(currentX) > 38;
+          front.style.transform = opened ? `translateX(${openX}px)` : "translateX(0)";
         };
 
         front.addEventListener("touchstart", (e) => {
@@ -1551,7 +1674,7 @@
       if (!item) return;
 
       if (openType === "contact" || event.target.closest(".avatar")) {
-        openContactSheet(item.sender);
+        openContactSheet(conversationKey(item));
         return;
       }
 
